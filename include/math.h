@@ -34,9 +34,9 @@ Point& operator += (Point& _point, const Vector3D& _vector)
     return _point;
 }
 
-Point operator * (Point& _point, const Matrix4D& _matrix)
+Point operator * (const Matrix4D& _matrix, const Point& _point)
 {
-    std::vector<float> modified_vertex = { _point.x, _point.y, _point.z, 0.0f };
+    std::vector<float> modified_vertex = { _point.x, _point.y, _point.z, 1.0f };
     std::vector<float> ans = { 0.0f, 0.0f, 0.0f, 0.0f };
 
     for (size_t i = 0; i < 4; i++)
