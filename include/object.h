@@ -23,7 +23,7 @@ public:
 	void print();
 	void push(const Point&);
 	void move(const Vector3D&);
-	void transform();
+	void transform(const Matrix4D&);
 
 	std::vector<unsigned int> indices;
 	std::vector<float> textureCoords;
@@ -78,9 +78,12 @@ void Object::move(const Vector3D& direction)
 	}
 }
 
-void Object::transform()
+void Object::transform(const Matrix4D& transformation)
 {
-
+	for (int i = 0; i < size(); i++)
+	{
+		vertices[i] = transformation * vertices[i];
+	}
 }
 
 #endif // !__OBJECT_H__
