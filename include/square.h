@@ -8,11 +8,17 @@
 class Square : public Object
 {
 public:
+	
+	/* Constructors & Destructors */
 	Square();
 	Square(const Point&, float, const unsigned int& = Z_AXIS);
 	~Square();
 
+	/* Auxiliar Methods */
+
 	void setUp();
+	void render();
+	void update();
 
 	unsigned int VAO, VBO[2], EBO; /* (VBO[0]->vertices) | (VBO[1]->textures) */ 
 
@@ -27,7 +33,6 @@ Square::Square()
 
 Square::Square(const Point& center, float separation, const unsigned int& axis)
 {
-	VAO = EBO = VBO[0] = VBO[1] = 0;
 
 	Point top_right(center), top_left(center), down_right(center), down_left(center);
 	Vector3D top_right_direction, top_left_direction, down_right_direction, down_left_direction;
@@ -78,13 +83,12 @@ Square::~Square()
 	glDeleteBuffers(1, &this->EBO);
 }
 
-
 void Square::setUp()
 {
 	/* Buffer Generators */
 	
 	glGenVertexArrays(1, &this->VAO);
-	glGenBuffers(2, this->VBO);
+	glGenBuffers(1, &this->VBO[0]);
 	glGenBuffers(1, &this->EBO);
 
 	/* Setting Up Buffers*/
@@ -105,10 +109,22 @@ void Square::setUp()
 	/* Unbinding Buffers */
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
+}
 
+void Square::render()
+{
+	this->update();
+	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+}
+
+void Square::update()
+{
+	glBindVertexArray(this->VAO);
+	glBindBuffer(GL_ARRAY_BUFFER, this->VBO[0]);
+	glBufferData(GL_ARRAY_BUFFER, this->size() * sizeof(this->get_vertices()), &this->front(), GL_STATIC_DRAW);
 }
 
 #endif // !__SQUARE_H__
