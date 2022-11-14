@@ -5,15 +5,28 @@
 
 #include "./directories.h"
 #include "./utils.h"
+#include "./camera.h"
 
 void framebuffer_size_callback(GLFWwindow*, int, int);
 void key_callback(GLFWwindow*, int, int, int, int);
+
+void mouse_callback(GLFWwindow* window, double xpos, double ypos);
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
+
+float lastX = SCR_WIDTH / 2.0f;
+float lastY = SCR_HEIGHT / 2.0f;
+bool firstMouse = true;
+
+// timing
+float deltaTime = 0.0f;	// time between current frame and last frame
+float lastFrame = 0.0f;
 
 class OpenGlLoader
 {
 public:
 
 	GLFWwindow* window;
+	Camera camera;
 
 	/* Constructor & Destructor */
 	OpenGlLoader();
@@ -50,13 +63,15 @@ OpenGlLoader::OpenGlLoader() : width(SCR_WIDTH), height(SCR_HEIGHT)
 	glEnable(GL_DEPTH_TEST);
 }
 
-OpenGlLoader::OpenGlLoader(const unsigned int& _width, const unsigned int& _height) : width(_width), height(_height)
+OpenGlLoader::OpenGlLoader(const unsigned int& _width, const unsigned int& _height) : width(_width), height(_height), camera(Camera(glm::vec3(0.0f, 0.0f, 3.0f)))
+
 {
 	glfwInit();
 	glfwContextInit();
 	glfwWindowInit();
 	glfwCallbacksSetter();
 	glfwGladLoader();
+	//glfwSetInputMode(this->window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	glEnable(GL_DEPTH_TEST);
 }
 
@@ -69,6 +84,8 @@ void OpenGlLoader::glfwCallbacksSetter()
 {
 	glfwSetFramebufferSizeCallback(this->window, framebuffer_size_callback);
 	glfwSetKeyCallback(this->window, key_callback);
+	glfwSetCursorPosCallback(this->window, mouse_callback);
+	glfwSetScrollCallback(this->window, scroll_callback);
 }
 
 void OpenGlLoader::glfwContextInit()
@@ -108,7 +125,7 @@ bool OpenGlLoader::isOpen()
 
 void OpenGlLoader::clearBuffers()
 {
-	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+	glClearColor(0.501f, 0.501f, 0.501f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
@@ -121,14 +138,6 @@ void OpenGlLoader::update()
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
 	glViewport(0, 0, width, height);
-}
-
-void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
-{
-	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-	{
-		glfwSetWindowShouldClose(window, true);
-	}
 }
 
 #endif // !__OPEN_GL_LOADER_H__
