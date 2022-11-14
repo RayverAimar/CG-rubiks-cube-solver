@@ -143,6 +143,15 @@ public:
     {
         glUniformMatrix4fv(glGetUniformLocation(ID, name.c_str()), 1, GL_FALSE, &mat[0][0]);
     }
+    void set_camera(Camera camera)
+    {
+        glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+        setMat4("projection", projection);
+
+        // camera/view transformation
+        glm::mat4 view = camera.GetViewMatrix();
+        setMat4("view", view);
+    }
 
     void classical_movement() {
         glm::mat4 model = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
