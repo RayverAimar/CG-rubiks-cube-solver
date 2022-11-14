@@ -24,14 +24,14 @@ public:
 	void push(const Point&);
 	void move(const Vector3D&);
 	void transform(const Matrix4D&);
+	void rotate(float, const unsigned int&);
 
 	std::vector<unsigned int> indices;
 	std::vector<float> textureCoords;
 
-private:
-
 	std::vector<Point> vertices;
 
+private:
 };
 
 Object::Object()
@@ -83,6 +83,18 @@ void Object::transform(const Matrix4D& transformation)
 	for (int i = 0; i < size(); i++)
 	{
 		vertices[i] = transformation * vertices[i];
+	}
+}
+
+void Object::rotate(float angle, const unsigned int& axis)
+{
+	for (int i = 0; i < this->size(); i++)
+	{
+		Matrix4D transformation(1.0f);
+		transformation.translate(0.2f, 0.2f, 0.0f);
+		transformation.rotate(angle, axis);
+		transformation.translate(-0.2f, -0.2f, 0.0f);
+		vertices[i] = transformation * vertices[i]; 
 	}
 }
 
