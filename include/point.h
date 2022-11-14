@@ -24,8 +24,11 @@ public:
     Point& operator = (const Point&);
     Point& operator += (const Point&);
     Point& operator -= (const Point&);
+    Point& operator /= (const int&);
+    Point operator / (const int&);
     Point operator - (const Point&);
     Point operator + (const Point&);
+    
 
     /* Auxiliar Functions s*/
     void print();
@@ -95,6 +98,23 @@ Point& Point::operator -= (const Point& one)
     this->y -= one.y;
     this->z -= one.z;
     return *this;
+}
+
+Point& Point::operator /= (const int& divider)
+{
+    this->x /= divider;
+    this->y /= divider;
+    this->z /= divider;
+    return *this;
+}
+
+Point Point::operator / (const int& divider)
+{
+    Point temporal_point(*this);
+    temporal_point.x /= divider;
+    temporal_point.y /= divider;
+    temporal_point.z /= divider;
+    return temporal_point;
 }
 
 void Point::print()
