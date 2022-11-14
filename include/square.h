@@ -19,6 +19,10 @@ public:
 	void setUp();
 	void render();
 	void update();
+	
+	/* Getters */
+	
+	Point get_center();
 
 	unsigned int VAO, VBO[2], EBO; /* (VBO[0]->vertices) | (VBO[1]->textures) */ 
 
@@ -125,6 +129,15 @@ void Square::update()
 	glBindVertexArray(this->VAO);
 	glBindBuffer(GL_ARRAY_BUFFER, this->VBO[0]);
 	glBufferData(GL_ARRAY_BUFFER, this->size() * sizeof(this->get_vertices()), &this->front(), GL_STATIC_DRAW);
+}
+
+Point Square::get_center()
+{
+	Point one = vertices[0] + vertices[1];
+	Point two = vertices[2] + vertices[3];
+	one /= 4, two /= 4;
+	one += two;
+	return one;
 }
 
 #endif // !__SQUARE_H__
