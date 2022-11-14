@@ -1,70 +1,247 @@
 #include "./include/open_gl_loader.h"
-#include "./include/shader.h"
-#include "./include/square.h"
+#include "./include/rubik.h"
 
 using namespace std;
 
-float separation = 0.19f;
+float separation = 0.2f;
 
-Point center(0.0f, 0.0f, 0.0f);
-Point center2(0.4f, 0.0f, 0.0f);
-Point center3(-0.4f, 0.0f, 0.0f);
+int timer = 900;
 
-Point center4(0.0f, 0.4f, 0.0f);
-Point center5(0.4f, 0.4f, 0.0f);
-Point center6(-0.4f, 0.4f, 0.0f);
+Point center(0.2f, 0.2f, 0.0f);
+Rubik *myRubik;
 
-Point center7(0.0f, -0.4f, 0.0f);
-Point center8(0.4f, -0.4f, 0.0f);
-Point center9(-0.4f, -0.4f, 0.0f);
+void processInput(GLFWwindow*);
 
+OpenGlLoader OpenGL(SCR_WIDTH, SCR_HEIGHT);
 
-#define Z_ANGLE 180.0f
-
-std::vector<std::vector<float>> transformation_matrix = {	{1.01f, 0.00f, 0.00f, 0.00f },
-															{0.00f, 1.01f, 0.00f, 0.00f },
-															{0.00f, 0.00f, 1.00f, 0.00f },
-															{0.00f, 0.00f, 0.00f, 1.00f } };
+int prime = 0;
+int write = 0;
 
 int main()
 {
-	OpenGlLoader OpenGL(SCR_WIDTH, SCR_HEIGHT);
-	Shader current_shader(VERTEX_SHADER_PATH, FRAGMENT_SHADER_PATH);
 
-	std::vector<Square*> mySquares(9);
-
-	mySquares[0] = new Square(center, separation);
-	mySquares[1] = new Square(center2, separation);
-	mySquares[2] = new Square(center3, separation);
-
-	mySquares[3] = new Square(center4, separation);
-	mySquares[4] = new Square(center5, separation);
-	mySquares[5] = new Square(center6, separation);
-
-	mySquares[6] = new Square(center7, separation);
-	mySquares[7] = new Square(center8, separation);
-	mySquares[8] = new Square(center9, separation);
-
-	Matrix4D transformation(1.0f);
-	//transformation.rotate(0.09f, Z_AXIS);
-	transformation.translate(0.01f, 0.01f, 0.0f);
-
-	mySquares[0]->print();
-	std::cout << "*********TRANSFORMATION**********" << std::endl;
-	mySquares[0]->transform(transformation);
-	mySquares[0]->print();
-
+	myRubik = new Rubik(center, separation);
+	std::string solution = "FFFFDDDDRRLLRRLL";
+	myRubik->read_solution(solution);
 	while (OpenGL.isOpen())
 	{
+
 		OpenGL.clearBuffers();
-
-		current_shader.use();
-
-		mySquares[0]->transform(transformation);
-		mySquares[0]->render();
+		
+		myRubik->render();
 
 		OpenGL.update();
 	}
 
 	return 0;
+}
+
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+	{
+		glfwSetWindowShouldClose(window, true);
+	}
+
+	if (glfwGetKey(window, GLFW_KEY_TAB) == GLFW_PRESS)
+	{
+		prime++;
+		prime %= 2;
+	}
+
+	if (glfwGetKey(window, GLFW_KEY_LEFT_ALT) == GLFW_PRESS)
+	{
+		write++;
+		write %= 2;
+	}
+
+	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
+	{
+		myRubik->enable();
+		myRubik->set_timer(118);
+	}
+
+	if (glfwGetKey(window, GLFW_KEY_ENTER) == GLFW_PRESS)
+	{
+		myRubik->enable();
+		myRubik->set_timer(118);
+		myRubik->start_solving();
+	}
+
+	if (write)
+	{
+		std::cout << " Writer mode! " << std::endl;
+		if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS)
+		{
+			myRubik->solution.push(F_MOVEMENT);
+		}
+		if (glfwGetKey(window, GLFW_KEY_B) == GLFW_PRESS)
+		{
+			myRubik->solution.push(F_MOVEMENT);
+		}
+		if (glfwGetKey(window, GLFW_KEY_U) == GLFW_PRESS)
+		{
+			myRubik->solution.push(F_MOVEMENT);
+		}
+		if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+		{
+			myRubik->solution.push(F_MOVEMENT);
+		}
+		if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
+		{
+			myRubik->solution.push(F_MOVEMENT);
+		}
+		if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS)
+		{
+			myRubik->solution.push(F_MOVEMENT);
+		}
+	}
+
+	else
+	{
+		if (!myRubik->in_movement())
+		{
+			if (prime)
+			{
+				if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS)
+				{
+					myRubik->enable();
+					myRubik->fPrime = true;
+				}
+				if (glfwGetKey(window, GLFW_KEY_B) == GLFW_PRESS)
+				{
+					myRubik->enable();
+					myRubik->bPrime = true;
+				}
+				if (glfwGetKey(window, GLFW_KEY_U) == GLFW_PRESS)
+				{
+					myRubik->enable();
+					myRubik->uPrime = true;
+				}
+				if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+				{
+					myRubik->enable();
+					myRubik->dPrime = true;
+				}
+				if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS)
+				{
+					myRubik->enable();
+					myRubik->lPrime = true;
+				}
+				if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
+				{
+					myRubik->enable();
+					myRubik->rPrime = true;
+				}
+				if (glfwGetKey(window, GLFW_KEY_M) == GLFW_PRESS)
+				{
+					myRubik->enable();
+					myRubik->mPrime = true;
+				}
+				if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
+				{
+					myRubik->enable();
+					myRubik->ePrime = true;
+				}
+				if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+				{
+					myRubik->enable();
+					myRubik->sPrime = true;
+				}
+			}
+			else
+			{
+				if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS)
+				{
+					myRubik->enable();
+					myRubik->f = true;
+				}
+				if (glfwGetKey(window, GLFW_KEY_B) == GLFW_PRESS)
+				{
+					myRubik->enable();
+					myRubik->b = true;
+				}
+				if (glfwGetKey(window, GLFW_KEY_U) == GLFW_PRESS)
+				{
+					myRubik->enable();
+					myRubik->u = true;
+				}
+				if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+				{
+					myRubik->enable();
+					myRubik->d = true;
+				}
+				if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS)
+				{
+					myRubik->enable();
+					myRubik->l = true;
+				}
+				if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
+				{
+					myRubik->enable();
+					myRubik->r = true;
+				}
+				if (glfwGetKey(window, GLFW_KEY_M) == GLFW_PRESS)
+				{
+					myRubik->enable();
+					myRubik->m = true;
+				}
+				if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
+				{
+					myRubik->enable();
+					myRubik->e = true;
+				}
+				if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+				{
+					myRubik->enable();
+					myRubik->s = true;
+				}
+			}
+		}
+	}
+}
+
+void processInput(GLFWwindow* window)
+{
+	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+		glfwSetWindowShouldClose(window, true);
+
+	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+	{
+		std::cout << "W" << std::endl;
+		OpenGL.camera.ProcessKeyboard(FORWARD, deltaTime);
+	}
+		
+	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+		OpenGL.camera.ProcessKeyboard(BACKWARD, deltaTime);
+	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+		OpenGL.camera.ProcessKeyboard(LEFT, deltaTime);
+	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+		OpenGL.camera.ProcessKeyboard(RIGHT, deltaTime);
+}
+
+void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
+{
+	float xpos = static_cast<float>(xposIn);
+	float ypos = static_cast<float>(yposIn);
+
+	if (firstMouse)
+	{
+		lastX = xpos;
+		lastY = ypos;
+		firstMouse = false;
+	}
+
+	float xoffset = xpos - lastX;
+	float yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
+
+	lastX = xpos;
+	lastY = ypos;
+
+	OpenGL.camera.ProcessMouseMovement(xoffset, yoffset);
+}
+
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+{
+	OpenGL.camera.ProcessMouseScroll(static_cast<float>(yoffset));
 }
