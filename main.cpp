@@ -11,9 +11,10 @@ Point center(0.2f, 0.2f, 0.0f);
 Rubik *myRubik;
 
 void processInput(GLFWwindow*);
+std::string get_solution(std::string);
 
 OpenGlLoader OpenGL(SCR_WIDTH, SCR_HEIGHT);
-std::string solution;
+std::string solution, reverse_solution;
 
 int prime = 0;
 int write = 0;
@@ -55,12 +56,20 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	if (glfwGetKey(window, GLFW_KEY_ENTER) == GLFW_PRESS)
 	{
 		std::cout << solution << std::endl;
+		reverse_solution.append(solution);
 		myRubik->read_solution(solution);
 		myRubik->set_speed(1.5f);
 		myRubik->enable();
 		solution.clear();
 	}
 	
+	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
+	{
+		solution = get_solution(reverse_solution);
+		myRubik->read_solution(solution);
+		reverse_solution.clear();
+	}
+
 	if (prime)
 	{
 		if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS)
@@ -200,4 +209,72 @@ void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
 	OpenGL.camera.ProcessMouseScroll(static_cast<float>(yoffset));
+}
+
+std::string get_solution(std::string all_moves)
+{
+	std::string ans;
+	for (int i = all_moves.size() - 1; ~i; i--)
+	{
+		switch (all_moves[i])
+		{
+			case F_MOVEMENT:
+				ans.push_back(F_PRIME_MOVEMENT);
+				break;
+			case F_PRIME_MOVEMENT:
+				ans.push_back(F_MOVEMENT);
+				break;
+			case D_MOVEMENT:
+				ans.push_back(D_PRIME_MOVEMENT);
+				break;
+			case D_PRIME_MOVEMENT:
+				ans.push_back(D_MOVEMENT);
+				break;
+			case U_MOVEMENT:
+				ans.push_back(U_PRIME_MOVEMENT);
+				break;
+			case U_PRIME_MOVEMENT:
+				ans.push_back(U_MOVEMENT);
+				break;
+			case B_MOVEMENT:
+				ans.push_back(B_PRIME_MOVEMENT);
+				break;
+			case B_PRIME_MOVEMENT:
+				ans.push_back(B_MOVEMENT);
+				break;
+			case R_MOVEMENT:
+				ans.push_back(R_PRIME_MOVEMENT);
+				break;
+			case R_PRIME_MOVEMENT:
+				ans.push_back(R_MOVEMENT);
+				break;
+			case L_MOVEMENT:
+				ans.push_back(L_PRIME_MOVEMENT);
+				break;
+			case L_PRIME_MOVEMENT:
+				ans.push_back(L_MOVEMENT);
+				break;
+			case M_MOVEMENT:
+				ans.push_back(M_PRIME_MOVEMENT);
+				break;
+			case M_PRIME_MOVEMENT:
+				ans.push_back(M_MOVEMENT);
+				break;
+			case E_MOVEMENT:
+				ans.push_back(E_PRIME_MOVEMENT);
+				break;
+			case E_PRIME_MOVEMENT:
+				ans.push_back(E_MOVEMENT);
+				break;
+			case S_MOVEMENT:
+				ans.push_back(S_PRIME_MOVEMENT);
+				break;
+			case S_PRIME_MOVEMENT:
+				ans.push_back(S_MOVEMENT);
+				break;
+			default:
+				break;
+		}
+	}
+	return ans;
 }
