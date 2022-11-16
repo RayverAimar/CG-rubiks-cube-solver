@@ -22,15 +22,25 @@
 #define VERTEX_SHADER_PATH					"..\\..\\..\\..\\..\\src\\Tutorial_Rubik\\shaders\\vertex_shader.vs"
 
 
-#define F_MOVEMENT							'F'
-#define D_MOVEMENT							'D'
-#define U_MOVEMENT							'U'
-#define B_MOVEMENT							'B'
-#define R_MOVEMENT							'R'
-#define L_MOVEMENT							'L'
-#define M_MOVEMENT							'M'
-#define E_MOVEMENT							'E'
-#define S_MOVEMENT							'S'
+#define F_MOVEMENT							'f'
+#define D_MOVEMENT							'd'
+#define U_MOVEMENT							'u'
+#define B_MOVEMENT							'b'
+#define R_MOVEMENT							'r'
+#define L_MOVEMENT							'l'
+#define M_MOVEMENT							'm'
+#define E_MOVEMENT							'e'
+#define S_MOVEMENT							's'
+
+#define F_PRIME_MOVEMENT					'F'
+#define D_PRIME_MOVEMENT					'D'
+#define U_PRIME_MOVEMENT					'U'
+#define B_PRIME_MOVEMENT					'B'
+#define R_PRIME_MOVEMENT					'R'
+#define L_PRIME_MOVEMENT					'L'
+#define M_PRIME_MOVEMENT					'M'
+#define E_PRIME_MOVEMENT					'E'
+#define S_PRIME_MOVEMENT					'S'
 
 
 
