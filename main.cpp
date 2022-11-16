@@ -13,6 +13,7 @@ Rubik *myRubik;
 void processInput(GLFWwindow*);
 
 OpenGlLoader OpenGL(SCR_WIDTH, SCR_HEIGHT);
+std::string solution;
 
 int prime = 0;
 int write = 0;
@@ -21,8 +22,8 @@ int main()
 {
 
 	myRubik = new Rubik(center, separation);
-	std::string solution = "FFFFDDDDRRLLRRLL";
-	myRubik->read_solution(solution);
+	solution = "sBRFUMdRbusLRMudUSrEsbmSreDmfd";
+
 	while (OpenGL.isOpen())
 	{
 
@@ -43,160 +44,117 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 		glfwSetWindowShouldClose(window, true);
 	}
 
-	if (glfwGetKey(window, GLFW_KEY_TAB) == GLFW_PRESS)
+	if (glfwGetKey(window, GLFW_KEY_CAPS_LOCK) == GLFW_PRESS)
 	{
 		prime++;
 		prime %= 2;
-	}
-
-	if (glfwGetKey(window, GLFW_KEY_LEFT_ALT) == GLFW_PRESS)
-	{
-		write++;
-		write %= 2;
-	}
-
-	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
-	{
-		myRubik->enable();
-		myRubik->set_timer(118);
+		if (prime) std::cout << "Prime Movements activated!" << std::endl;
+		else std::cout << "Prime Movements desactivated!" << std::endl;
 	}
 
 	if (glfwGetKey(window, GLFW_KEY_ENTER) == GLFW_PRESS)
 	{
+		std::cout << solution << std::endl;
+		myRubik->read_solution(solution);
+		myRubik->set_speed(1.5f);
 		myRubik->enable();
-		myRubik->set_timer(118);
-		myRubik->start_solving();
+		solution.clear();
 	}
-
-	if (write)
+	
+	if (prime)
 	{
-		std::cout << " Writer mode! " << std::endl;
 		if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS)
 		{
-			myRubik->solution.push(F_MOVEMENT);
+			solution.push_back(F_PRIME_MOVEMENT);
+			std::cout << solution << std::endl;
 		}
 		if (glfwGetKey(window, GLFW_KEY_B) == GLFW_PRESS)
 		{
-			myRubik->solution.push(F_MOVEMENT);
+			solution.push_back(B_PRIME_MOVEMENT);
+			std::cout << solution << std::endl;
 		}
 		if (glfwGetKey(window, GLFW_KEY_U) == GLFW_PRESS)
 		{
-			myRubik->solution.push(F_MOVEMENT);
+			solution.push_back(U_PRIME_MOVEMENT);
+			std::cout << solution << std::endl;
 		}
 		if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
 		{
-			myRubik->solution.push(F_MOVEMENT);
+			solution.push_back(D_PRIME_MOVEMENT);
+			std::cout << solution << std::endl;
 		}
 		if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
 		{
-			myRubik->solution.push(F_MOVEMENT);
+			solution.push_back(R_PRIME_MOVEMENT);
+			std::cout << solution << std::endl;
 		}
 		if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS)
 		{
-			myRubik->solution.push(F_MOVEMENT);
+			solution.push_back(L_PRIME_MOVEMENT);
+			std::cout << solution << std::endl;
+		}
+		if (glfwGetKey(window, GLFW_KEY_M) == GLFW_PRESS)
+		{
+			solution.push_back(M_PRIME_MOVEMENT);
+			std::cout << solution << std::endl;
+		}
+		if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
+		{
+			solution.push_back(E_PRIME_MOVEMENT);
+			std::cout << solution << std::endl;
+		}
+		if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+		{
+			solution.push_back(S_PRIME_MOVEMENT);
+			std::cout << solution << std::endl;
 		}
 	}
-
 	else
 	{
-		if (!myRubik->in_movement())
+		if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS)
 		{
-			if (prime)
-			{
-				if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS)
-				{
-					myRubik->enable();
-					myRubik->fPrime = true;
-				}
-				if (glfwGetKey(window, GLFW_KEY_B) == GLFW_PRESS)
-				{
-					myRubik->enable();
-					myRubik->bPrime = true;
-				}
-				if (glfwGetKey(window, GLFW_KEY_U) == GLFW_PRESS)
-				{
-					myRubik->enable();
-					myRubik->uPrime = true;
-				}
-				if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-				{
-					myRubik->enable();
-					myRubik->dPrime = true;
-				}
-				if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS)
-				{
-					myRubik->enable();
-					myRubik->lPrime = true;
-				}
-				if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
-				{
-					myRubik->enable();
-					myRubik->rPrime = true;
-				}
-				if (glfwGetKey(window, GLFW_KEY_M) == GLFW_PRESS)
-				{
-					myRubik->enable();
-					myRubik->mPrime = true;
-				}
-				if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
-				{
-					myRubik->enable();
-					myRubik->ePrime = true;
-				}
-				if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-				{
-					myRubik->enable();
-					myRubik->sPrime = true;
-				}
-			}
-			else
-			{
-				if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS)
-				{
-					myRubik->enable();
-					myRubik->f = true;
-				}
-				if (glfwGetKey(window, GLFW_KEY_B) == GLFW_PRESS)
-				{
-					myRubik->enable();
-					myRubik->b = true;
-				}
-				if (glfwGetKey(window, GLFW_KEY_U) == GLFW_PRESS)
-				{
-					myRubik->enable();
-					myRubik->u = true;
-				}
-				if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-				{
-					myRubik->enable();
-					myRubik->d = true;
-				}
-				if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS)
-				{
-					myRubik->enable();
-					myRubik->l = true;
-				}
-				if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
-				{
-					myRubik->enable();
-					myRubik->r = true;
-				}
-				if (glfwGetKey(window, GLFW_KEY_M) == GLFW_PRESS)
-				{
-					myRubik->enable();
-					myRubik->m = true;
-				}
-				if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
-				{
-					myRubik->enable();
-					myRubik->e = true;
-				}
-				if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-				{
-					myRubik->enable();
-					myRubik->s = true;
-				}
-			}
+			solution.push_back(F_MOVEMENT);
+			std::cout << solution << std::endl;
+		}
+		if (glfwGetKey(window, GLFW_KEY_B) == GLFW_PRESS)
+		{
+			solution.push_back(B_MOVEMENT);
+			std::cout << solution << std::endl;
+		}
+		if (glfwGetKey(window, GLFW_KEY_U) == GLFW_PRESS)
+		{
+			solution.push_back(U_MOVEMENT);
+			std::cout << solution << std::endl;
+		}
+		if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+		{
+			solution.push_back(D_MOVEMENT);
+			std::cout << solution << std::endl;
+		}
+		if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
+		{
+			solution.push_back(R_MOVEMENT);
+			std::cout << solution << std::endl;
+		}
+		if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS)
+		{
+			solution.push_back(L_MOVEMENT);
+			std::cout << solution << std::endl;
+		}
+		if (glfwGetKey(window, GLFW_KEY_M) == GLFW_PRESS)
+		{
+			solution.push_back(M_MOVEMENT);
+			std::cout << solution << std::endl;
+		}
+		if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
+		{
+			solution.push_back(E_MOVEMENT);
+			std::cout << solution << std::endl;
+		}
+		if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+		{
+			solution.push_back(S_MOVEMENT);
+			std::cout << solution << std::endl;
 		}
 	}
 }
@@ -208,10 +166,8 @@ void processInput(GLFWwindow* window)
 
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
 	{
-		std::cout << "W" << std::endl;
 		OpenGL.camera.ProcessKeyboard(FORWARD, deltaTime);
 	}
-		
 	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
 		OpenGL.camera.ProcessKeyboard(BACKWARD, deltaTime);
 	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
