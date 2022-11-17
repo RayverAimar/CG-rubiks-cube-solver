@@ -2,21 +2,21 @@
 #define OLL_H
 
 #include <iostream>
-#include "./cube.h"
+#include "./solver_cube.h"
 
 class OLL {
 
 public:
-  static void solveOLL(Cube&);
+  static void solveOLL(SolverCube&);
 private:
-  static int findState(Cube&); //Rotate U 4 times, check each cube state against file
-  static int findEdges(Cube&);
-  static void solveCase(Cube&, int);
-  static int checkOLL(Cube&);
-  static int checkEdges(Cube&);
+  static int findState(SolverCube&); //Rotate U 4 times, check each cube state against file
+  static int findEdges(SolverCube&);
+  static void solveCase(SolverCube&, int);
+  static int checkOLL(SolverCube&);
+  static int checkEdges(SolverCube&);
 };
 
-void OLL::solveOLL(Cube &cube) {
+void OLL::solveOLL(SolverCube &cube) {
   if (!checkEdges(cube)) {
     int state = findEdges(cube);
     while (state == 0) {
@@ -36,7 +36,7 @@ void OLL::solveOLL(Cube &cube) {
 
 }
 
-int OLL::checkOLL(Cube &cube) {
+int OLL::checkOLL(SolverCube &cube) {
   for (int i=0; i<9; ++i) {
     if (cube.cubies[i][1] != 1)
       return 0;
@@ -44,7 +44,7 @@ int OLL::checkOLL(Cube &cube) {
   return 1;
 }
 
-void OLL::solveCase(Cube &cube, int state) {
+void OLL::solveCase(SolverCube &cube, int state) {
   switch(state) {
     case 1:
       cube.moves("FRURRRUUUFFF");
@@ -82,7 +82,7 @@ void OLL::solveCase(Cube &cube, int state) {
   }
 }
 
-int OLL::findState(Cube &cube) {
+int OLL::findState(SolverCube &cube) {
   int topLayer[9];
   int redSide[3];
   int greenSide[3];
@@ -195,7 +195,7 @@ int OLL::findState(Cube &cube) {
 
 }
 
-int OLL::findEdges(Cube &cube) {
+int OLL::findEdges(SolverCube &cube) {
 
   int topLayer[9];
 
@@ -244,7 +244,7 @@ int OLL::findEdges(Cube &cube) {
 
 }
 
-int OLL::checkEdges(Cube &cube) {
+int OLL::checkEdges(SolverCube &cube) {
   if (cube.cubies[1][1] != 1 || cube.cubies[3][1] != 1 || cube.cubies[5][1] != 1 || cube.cubies[7][1] != 1) {
     return 0;
   }

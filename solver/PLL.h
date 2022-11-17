@@ -1,20 +1,20 @@
 #ifndef PLL_H
 #define PLL_H
 
-#include "./cube.h"
+#include "./solver_cube.h"
 
 class PLL {
 
 public:
-  static void solvePLL(Cube &);
-  static void adjustUFace(Cube &);
-  static void solveCorners(Cube &);
-  static int checkCorners(Cube &);
-  static int checkEdges(Cube &);
-  static void solveEdges(Cube &);
+  static void solvePLL(SolverCube &);
+  static void adjustUFace(SolverCube &);
+  static void solveCorners(SolverCube &);
+  static int checkCorners(SolverCube &);
+  static int checkEdges(SolverCube &);
+  static void solveEdges(SolverCube &);
 };
 
-void PLL::solvePLL(Cube &cube) {
+void PLL::solvePLL(SolverCube &cube) {
   adjustUFace(cube);
   while (!checkCorners(cube)) {
     solveCorners(cube);
@@ -26,13 +26,13 @@ void PLL::solvePLL(Cube &cube) {
   }
 }
 
-void PLL::adjustUFace(Cube &cube) {
+void PLL::adjustUFace(SolverCube &cube) {
   while (cube.cubies[2][5] != 5 || cube.cubies[0][2] != 2) {
     cube.moves("U");
   }
 }
 
-void PLL::solveEdges(Cube &cube) {
+void PLL::solveEdges(SolverCube &cube) {
   if (cube.cubies[1][2] == 5 && cube.cubies[1][3] == 2 && cube.cubies[1][4] == 4 && cube.cubies[1][5] == 3) {
     cube.moves("RRURURRRUUURRRUUURRRURRR");
   }
@@ -54,7 +54,7 @@ void PLL::solveEdges(Cube &cube) {
   }
 }
 
-void PLL::solveCorners(Cube &cube) {
+void PLL::solveCorners(SolverCube &cube) {
   if (cube.cubies[2][2] == 4 && cube.cubies[0][3] == 5 && cube.cubies[2][3] == 2
   && cube.cubies[0][4] == 3 && cube.cubies[2][4] == 3 && cube.cubies[0][5] == 4) {
     cube.moves("RRRFRRRBBRFFFRRRBBRR");
@@ -68,7 +68,7 @@ void PLL::solveCorners(Cube &cube) {
   }
 }
 
-int PLL::checkCorners(Cube &cube) {
+int PLL::checkCorners(SolverCube &cube) {
   if (cube.cubies[0][2] != 2 || cube.cubies[2][2] != 2 || cube.cubies[0][3] != 3 || cube.cubies[2][3] != 3 || cube.cubies[0][4] != 4 || cube.cubies[2][4] != 4 || cube.cubies[0][5] != 5 || cube.cubies[2][5] != 5) {
     return 0;
   }
@@ -76,7 +76,7 @@ int PLL::checkCorners(Cube &cube) {
     return 1;
 }
 
-int PLL::checkEdges(Cube &cube) {
+int PLL::checkEdges(SolverCube &cube) {
     if (cube.cubies[1][2] == 2 && cube.cubies[1][3] == 3 && cube.cubies[1][4] == 4 && cube.cubies[1][5] == 5) {
       return 1;
     }

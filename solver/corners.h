@@ -1,22 +1,22 @@
 #ifndef CORNERS_H
 #define CORNERS_H
 
-#include "./cube.h"
+#include "./solver_cube.h"
 #include "./cross.h"
 
 class Corners {
 
 public:
-  static void solveCorners(Cube&);
+  static void solveCorners(SolverCube&);
 private:
-  static int checkCorners(Cube&);
-  static int checkBottomLayer(Cube &cube);
+  static int checkCorners(SolverCube&);
+  static int checkBottomLayer(SolverCube &cube);
 
 };
 
 //Current version gets caught in a loop
 
-void Corners::solveCorners(Cube &cube) {
+void Corners::solveCorners(SolverCube &cube) {
   while (checkBottomLayer(cube)) {
 
     //get a white corner into the top layer
@@ -110,7 +110,7 @@ void Corners::solveCorners(Cube &cube) {
   }
 }
 
-int Corners::checkCorners(Cube &cube) {
+int Corners::checkCorners(SolverCube &cube) {
   if (!cube.cubies[0][0] && !cube.cubies[2][0] && !cube.cubies[6][0] && !cube.cubies[8][0]) {
 
     return 0;
@@ -120,7 +120,7 @@ int Corners::checkCorners(Cube &cube) {
   }
 }
 
-int Corners::checkBottomLayer(Cube &cube) {
+int Corners::checkBottomLayer(SolverCube &cube) {
   if (cube.cubies[0][0] && cube.cubies[2][0] && cube.cubies[6][0] && cube.cubies[8][0]
     && cube.cubies[6][2] && cube.cubies[8][2] && cube.cubies[6][3] && cube.cubies[8][3]
     && cube.cubies[6][4] && cube.cubies[8][4] && cube.cubies[6][5] && cube.cubies[8][5]) {

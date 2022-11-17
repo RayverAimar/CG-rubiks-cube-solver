@@ -1,22 +1,22 @@
 #ifndef CROSS_H
 #define CROSS_H
 
-#include "./cube.h"
+#include "./solver_cube.h"
 
 class Cross {
 public:
-  static void solveCross(Cube&);
-  static int checkCross(Cube&);
-  static void solveEdge(Cube&);
+  static void solveCross(SolverCube&);
+  static int checkCross(SolverCube&);
+  static void solveEdge(SolverCube&);
 };
 
-void Cross::solveCross(Cube &cube) {
+void Cross::solveCross(SolverCube &cube) {
   while (checkCross(cube)) {
     solveEdge(cube);
   }
 }
 
-int Cross::checkCross(Cube &cube) { //must check if in correct position as well
+int Cross::checkCross(SolverCube &cube) { //must check if in correct position as well
   if (!cube.cubies[1][0] && !cube.cubies[3][0] && !cube.cubies[5][0] && !cube.cubies[7][0] && cube.cubies[7][2] == 2 && cube.cubies[7][3] == 3 && cube.cubies[7][4] == 4 && cube.cubies[7][5] == 5) {
     return 0;
   }
@@ -24,7 +24,7 @@ int Cross::checkCross(Cube &cube) { //must check if in correct position as well
     return 1;
 }
 
-void Cross::solveEdge(Cube &cube) {
+void Cross::solveEdge(SolverCube &cube) {
 
   //Check edges on all sides --- don't forget, white can be in wrong position on the bottom
   for (int side=0; side<6; ++side) {

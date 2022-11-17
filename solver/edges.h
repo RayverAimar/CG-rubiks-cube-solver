@@ -1,25 +1,25 @@
 #ifndef EDGES_H
 #define EDGES_H
 
-#include "./cube.h"
+#include "./solver_cube.h"
 
 class Edges {
 
 public:
-  static void solveEdges(Cube &cube);
+  static void solveEdges(SolverCube &cube);
 private:
-  static void solveEdge(Cube &cube);
-  static int checkEdges(Cube &cube);
+  static void solveEdge(SolverCube &cube);
+  static int checkEdges(SolverCube &cube);
 };
 
-void Edges::solveEdges(Cube &cube) {
+void Edges::solveEdges(SolverCube &cube) {
 
   while (!checkEdges(cube)) {
     solveEdge(cube);
   }
 }
 
-void Edges::solveEdge(Cube &cube) {
+void Edges::solveEdge(SolverCube &cube) {
   if (cube.cubies[1][1] != 1 && cube.cubies[1][4] != 1) {
     if (cube.cubies[1][1] == 2) {
       if (cube.cubies[1][4] == 3) {
@@ -173,7 +173,7 @@ void Edges::solveEdge(Cube &cube) {
 
 }
 
-int Edges::checkEdges(Cube &cube) {
+int Edges::checkEdges(SolverCube &cube) {
   if (cube.cubies[3][2] != 2 || cube.cubies[5][2] != 2)
     return 0;
   else if (cube.cubies[3][3] != 3 || cube.cubies[5][3] != 3)
