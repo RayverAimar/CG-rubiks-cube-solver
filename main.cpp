@@ -1,5 +1,6 @@
 #include "./include/open_gl_loader.h"
 #include "./include/rubik.h"
+#include "./solver/solver.h"
 
 using namespace std;
 
@@ -14,6 +15,7 @@ void processInput(GLFWwindow*);
 std::string get_solution(std::string);
 
 OpenGlLoader OpenGL(SCR_WIDTH, SCR_HEIGHT);
+std::string history;
 std::string solution, reverse_solution;
 
 int prime = 0;
@@ -23,7 +25,8 @@ int main()
 {
 
 	myRubik = new Rubik(center, separation);
-	solution = "sBRFUMdRbusLRMudUSrEsbmSreDmfd";
+	solution = "BDUDLUF";
+	std::cout << solver::format_movements(solution) << std::endl;
 
 	while (OpenGL.isOpen())
 	{
@@ -60,14 +63,19 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 		myRubik->read_solution(solution);
 		myRubik->set_speed(1.5f);
 		myRubik->enable();
+		history.append(solution);
 		solution.clear();
 	}
 	
 	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
 	{
-		solution = get_solution(reverse_solution);
-		myRubik->read_solution(solution);
+		std::string perfect_solution = solver::solve(solver::format_movements(history));
+		std::cout << "perfect solution: " << perfect_solution << std::endl;
+		std::cout << "format solution: " << solver::format_solution(perfect_solution) << std::endl;
+		//solution = get_solution(reverse_solution);
+		myRubik->read_solution(solver::format_solution(perfect_solution));
 		reverse_solution.clear();
+		history.clear();
 	}
 
 	if (prime)
