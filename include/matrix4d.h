@@ -2,6 +2,7 @@
 #define __MATRIX_4D_H__
 
 #include "./utils.h"
+#include "./vector3d.h"
 
 class Matrix4D
 {
@@ -19,6 +20,7 @@ public:
 
 	void rotate(float, const unsigned int&);
 	void translate(const float&, const float&, const float&);
+	void translate(const Vector3D&);
 	void scale(const float&, const float&, const float&);
 	void print();
 
@@ -121,6 +123,17 @@ void Matrix4D::translate(const float& x_translate, const float& y_translate, con
 
 	*this = (*this) * translation;
 }
+
+void Matrix4D::translate(const Vector3D& direction)
+{
+	Matrix4D translation(1.0f);
+	translation.matrix[X_AXIS][3] = direction.direction.x;
+	translation.matrix[Y_AXIS][3] = direction.direction.y;
+	translation.matrix[Z_AXIS][3] = direction.direction.z;
+
+	*this = (*this) * translation;
+}
+
 
 void Matrix4D::scale(const float& x_scale, const float& y_scale, const float& z_scale)
 {
