@@ -85,6 +85,11 @@ HyperCube::~HyperCube()
 
 }
 
+void HyperCube::stop_current_movement()
+{
+
+}
+
 void HyperCube::look_for_movement()
 {
 	if (!enable_movement) return;

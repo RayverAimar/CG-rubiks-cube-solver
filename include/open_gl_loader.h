@@ -10,9 +10,6 @@
 void framebuffer_size_callback(GLFWwindow*, int, int);
 void key_callback(GLFWwindow*, int, int, int, int);
 
-void mouse_callback(GLFWwindow* window, double xpos, double ypos);
-void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
-
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
 bool firstMouse = true;
@@ -84,8 +81,6 @@ void OpenGlLoader::glfwCallbacksSetter()
 {
 	glfwSetFramebufferSizeCallback(this->window, framebuffer_size_callback);
 	glfwSetKeyCallback(this->window, key_callback);
-	glfwSetCursorPosCallback(this->window, mouse_callback);
-	glfwSetScrollCallback(this->window, scroll_callback);
 }
 
 void OpenGlLoader::glfwContextInit()
