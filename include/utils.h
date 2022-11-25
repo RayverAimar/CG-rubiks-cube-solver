@@ -43,6 +43,8 @@
 #define S_PRIME_MOVEMENT					's'
 
 
+const char valid_moves[] = { F_MOVEMENT, D_MOVEMENT, U_MOVEMENT, B_MOVEMENT, R_MOVEMENT, L_MOVEMENT,
+F_PRIME_MOVEMENT, D_PRIME_MOVEMENT, U_PRIME_MOVEMENT, B_PRIME_MOVEMENT, R_PRIME_MOVEMENT, L_PRIME_MOVEMENT };
 const unsigned int prime_pattern[] = {2, 5, 8, 1, 4, 7, 0, 3, 6};
 const unsigned int non_prime_pattern[] = {6, 3, 0 , 7, 4, 1, 8, 5, 2};
 
