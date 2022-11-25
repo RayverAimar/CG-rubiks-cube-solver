@@ -2,6 +2,7 @@
 #define __VECTOR_3D__
 
 #include "point.h"
+#include <math.h>
 
 struct Vector3D
 {
@@ -28,10 +29,15 @@ public:
     Vector3D operator + (const Vector3D&);
     Vector3D& operator += (const Vector3D&);
     Vector3D& operator -= (const Vector3D&);
+    
+    /* Getters */
+
+    Vector3D unit();
+    float norm();
 
     /* Auxiliar Functions */
     void print();
-
+    
 };
 
 Vector3D::Vector3D()
@@ -99,10 +105,25 @@ Vector3D& Vector3D::operator -= (const Vector3D& _vector)
     return *this;
 }
 
+Vector3D Vector3D::unit()
+{
+    Vector3D to_return(*this);
+    to_return.direction /= this->norm();
+    return to_return;
+}
+
+float Vector3D::norm()
+{
+    float ans = (this->direction.x * this->direction.x) + (this->direction.y * this->direction.y) + (this->direction.z * this->direction.z);
+    ans = sqrt(ans);
+    return ans;
+}
+
 void Vector3D::print()
 {
     this->direction.print();
 }
+
 
 /* More Point Overloads */
 
