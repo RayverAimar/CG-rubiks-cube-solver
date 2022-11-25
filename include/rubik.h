@@ -2,7 +2,11 @@
 #define __RUBIK_H__
 
 #include <queue>
+#include <stdlib.h>
+#include <time.h>
 #include "./cube.h"
+#include "./solver/solve.h"
+#include "./solver/random.h"
 
 class Rubik
 {
@@ -22,21 +26,31 @@ public:
 	void set_timer(const int&);
 	void set_camera(Camera);
 	void set_speed(const float&);
-	void read_solution(const std::string&);
+	void read_moves();
 	void disable();
+	void append(const char&);
+	void append(const std::string&);
 	bool in_movement();
+	bool is_solved();
+	void solve();
+	void scramble();
 
+	/* Getters */
+
+	Point get_center();
+	
 	/* Variables */
 
 	std::vector<Cube*> Cubes;
 	std::vector<Cube**> Frontal_Litter, Back_Litter, Up_Litter, Down_Litter, Left_Litter, Right_Litter, Middle_Litter, E_Litter, S_Litter;
 	std::queue<char> solution;
+	std::string moves, history;
 	bool f = false, fPrime = false, d = false, dPrime = false, u = false, uPrime = false, b = false, bPrime = false, r = false, rPrime = false;
 	bool l = false, lPrime = false, m = false, mPrime = false, e = false, ePrime = false, s = false, sPrime = false;
 
 private:
 	int timer, n_moves = 0;
-	bool enable_movement, start_new_movement;
+	bool enable_movement, start_new_movement, solved;
 	float chunk;
 	
 	/* Movements Methods */
@@ -75,11 +89,11 @@ private:
 	
 };
 
-Rubik::Rubik() : timer(0), enable_movement(false), start_new_movement(false), chunk(0.75f)
+Rubik::Rubik() : timer(0), enable_movement(false), start_new_movement(false), chunk(0.75f), solved(true)
 {
 }
 
-Rubik::Rubik(const Point& center, const float& separation) : timer(0), enable_movement(false), start_new_movement(false), chunk(0.75f)
+Rubik::Rubik(const Point& center, const float& separation) : timer(0), enable_movement(false), start_new_movement(false), chunk(0.75f), solved(true)
 {
 	Point frontal_litter_center_1(center.x - separation,	center.y - separation,		center.z);						/* Bottom Litter 0 */		/* Left Litter 0  */	
 	Point frontal_litter_center_2(center.x,					center.y - separation,		center.z);						/* Bottom Litter 1 */														/* M Litter 1  */
@@ -140,12 +154,58 @@ Rubik::~Rubik()
 {
 }
 
-void Rubik::read_solution(const std::string& sol)
+bool Rubik::is_solved()
 {
-	for (int i = 0; i < sol.size(); i++)
+	return this->solved;
+}
+
+
+void Rubik::solve()
+{
+	if (this->history.empty()) return;
+	std::string moves_to_solve = format_solution(get_solution(to_cube_not(string_to_vector(this->history))));
+	this->history.clear();
+	this->append(moves_to_solve);
+	this->read_moves();
+	this->enable();
+}
+
+void Rubik::scramble()
+{
+	int n_moves = rand() % 30 + 10;
+	for (int i = 0; i < n_moves; i++)
 	{
-		solution.push(sol[i]);
+		int movement_idx = rand() % 6;
+		this->history.push_back(valid_moves[movement_idx]);
+		this->moves.push_back(valid_moves[movement_idx]);
 	}
+	std::cout << this->moves << std::endl;
+	this->read_moves();
+	this->set_speed(3.0f);
+	this->enable();
+}
+
+void Rubik::read_moves()
+{
+	for (int i = 0; i < moves.size(); i++)
+	{
+		solution.push(moves[i]);
+	}
+	std::cout << this->moves << std::endl;
+	this->moves.clear();
+}
+
+void Rubik::append(const char &movement)
+{
+	this->moves.push_back(movement);
+	this->history.push_back(movement);
+	std::cout << this->moves << std::endl;
+}
+
+void Rubik::append(const std::string &movements)
+{
+	this->moves.append(movements);
+	this->history.append(movements);
 }
 
 void Rubik::set_speed(const float& _chunk)
@@ -156,7 +216,7 @@ void Rubik::set_speed(const float& _chunk)
 void Rubik::set_next_movement(char cur_movement)
 {
 	timer = (int)((90.0f / chunk) - 2);
-	start_new_movement = false;
+	start_new_movement = solved = false;
 	//n_moves = 0;
 	switch(cur_movement)
 	{
@@ -221,7 +281,7 @@ void Rubik::set_next_movement(char cur_movement)
 
 void Rubik::disable()
 {
-	enable_movement = start_new_movement = true;
+	enable_movement = start_new_movement = solved = true;
 }
 
 void Rubik::set_timer(const int& _timer)
@@ -261,92 +321,96 @@ void Rubik::reassign_pointers(const std::vector<Cube**>& cur_litter, const unsig
 	}
 }
 
+Point Rubik::get_center()
+{
+	return Cubes[13]->get_center();
+}
+
 void Rubik::stop_current_movement()
 {
 	if (f) {
 		reassign_pointers(Frontal_Litter, non_prime_pattern);
-		std::cout << "Swapped F " << std::endl;
+		//std::cout << "Swapped F " << std::endl;
 	}
 	else if (fPrime)
 	{
 		reassign_pointers(Frontal_Litter, prime_pattern);
-		std::cout << "Swapped F Prime " << std::endl;
+		//std::cout << "Swapped F Prime " << std::endl;
 	}
 	else if (d)
 	{
 		reassign_pointers(Down_Litter, non_prime_pattern);
-		std::cout << "Swapped D" << std::endl;
+		//std::cout << "Swapped D" << std::endl;
 	}
 	else if (dPrime)
 	{
 		reassign_pointers(Down_Litter, prime_pattern);
-		std::cout << "Swapped D Prime " << std::endl;
+		//std::cout << "Swapped D Prime " << std::endl;
 	}
 	else if (u)
 	{
 		reassign_pointers(Up_Litter, non_prime_pattern);
-		std::cout << "Swapped U " << std::endl;
+		//std::cout << "Swapped U " << std::endl;
 	}
 	else if (uPrime)
 	{
 		reassign_pointers(Up_Litter, prime_pattern);
-		std::cout << "Swapped U Prime " << std::endl;
+		//std::cout << "Swapped U Prime " << std::endl;
 	}
 	else if (b)
 	{
 		reassign_pointers(Back_Litter, non_prime_pattern);
-		std::cout << "Swapped B " << std::endl;
+		//std::cout << "Swapped B " << std::endl;
 	}
 	else if (bPrime)
 	{
 		reassign_pointers(Back_Litter, prime_pattern);
-		std::cout << "Swapped B Prime" << std::endl;
+		//std::cout << "Swapped B Prime" << std::endl;
 	}
 	else if (r)
 	{
 		reassign_pointers(Right_Litter, non_prime_pattern);
-		std::cout << "Swapped R " << std::endl;
+		//std::cout << "Swapped R " << std::endl;
 	}
 	else if (rPrime)
 	{
 		reassign_pointers(Right_Litter, prime_pattern);
-		std::cout << "Swapped R Prime" << std::endl;
+		//std::cout << "Swapped R Prime" << std::endl;
 	}
 	else if (l)
 	{
 		reassign_pointers(Left_Litter, non_prime_pattern);
-		std::cout << "Swapped L " << std::endl;
+		//std::cout << "Swapped L " << std::endl;
 	}
 	else if (lPrime)
 	{
 		reassign_pointers(Left_Litter, prime_pattern);
-		std::cout << "Swapped L Prime " << std::endl;
+		//std::cout << "Swapped L Prime " << std::endl;
 	}
 	else if (m)
 	{
 		reassign_pointers(Middle_Litter, non_prime_pattern);
-		std::cout << "Swapped M " << std::endl;
-
+		//std::cout << "Swapped M " << std::endl;
 	}
 	else if (mPrime)
 	{
 		reassign_pointers(Middle_Litter, prime_pattern);
-		std::cout << "Swapped M Prime" << std::endl;
+		//std::cout << "Swapped M Prime" << std::endl;
 	}
 	else if (e)
 	{
 		reassign_pointers(E_Litter, non_prime_pattern);
-		std::cout << "Swapped E " << std::endl;
+		//std::cout << "Swapped E " << std::endl;
 	}
 	else if (ePrime)
 	{
 		reassign_pointers(E_Litter, prime_pattern);
-		std::cout << "Swapped E Prime " << std::endl;
+		//std::cout << "Swapped E Prime " << std::endl;
 	}
 	else if (s)
 	{
 		reassign_pointers(S_Litter, non_prime_pattern);
-		std::cout << "Swapped S " << std::endl;
+		//std::cout << "Swapped S " << std::endl;
 	}
 	else if (sPrime)
 	{
