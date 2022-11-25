@@ -111,6 +111,28 @@ std::vector<std::string> string_to_vector(std::string moves)
     {
         std::string temp = "";
         temp.push_back(moves[i]);
+        /*switch (moves[i])
+        {
+        case F_PRIME_MOVEMENT:
+            temp.push_back('\'');
+            break;
+        case B_PRIME_MOVEMENT:
+            temp.push_back('\'');
+            break;
+        case D_PRIME_MOVEMENT:
+            temp.push_back('\'');
+            break;
+        case U_PRIME_MOVEMENT:
+            temp.push_back('\'');
+            break;
+        case L_PRIME_MOVEMENT:
+            temp.push_back('\'');
+            break;
+        case R_PRIME_MOVEMENT:
+            temp.push_back('\'');
+        default:
+            break;
+        }*/
         to_return.push_back(temp);
     }
     return to_return;
