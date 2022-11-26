@@ -5,25 +5,15 @@
 
 #include "./directories.h"
 #include "./utils.h"
-#include "./camera.h"
 
 void framebuffer_size_callback(GLFWwindow*, int, int);
 void key_callback(GLFWwindow*, int, int, int, int);
-
-float lastX = SCR_WIDTH / 2.0f;
-float lastY = SCR_HEIGHT / 2.0f;
-bool firstMouse = true;
-
-// timing
-float deltaTime = 0.0f;	// time between current frame and last frame
-float lastFrame = 0.0f;
 
 class OpenGlLoader
 {
 public:
 
 	GLFWwindow* window;
-	Camera camera;
 
 	/* Constructor & Destructor */
 	OpenGlLoader();
@@ -60,7 +50,7 @@ OpenGlLoader::OpenGlLoader() : width(SCR_WIDTH), height(SCR_HEIGHT)
 	glEnable(GL_DEPTH_TEST);
 }
 
-OpenGlLoader::OpenGlLoader(const unsigned int& _width, const unsigned int& _height) : width(_width), height(_height), camera(Camera(glm::vec3(0.0f, 0.0f, 3.0f)))
+OpenGlLoader::OpenGlLoader(const unsigned int& _width, const unsigned int& _height) : width(_width), height(_height)
 
 {
 	glfwInit();

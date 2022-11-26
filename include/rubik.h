@@ -24,7 +24,6 @@ public:
 	void move(const Matrix4D&);
 	void enable();
 	void set_timer(const int&);
-	void set_camera(Camera);
 	void set_speed(const float&);
 	void read_moves();
 	void disable();
@@ -281,7 +280,8 @@ void Rubik::set_next_movement(char cur_movement)
 
 void Rubik::disable()
 {
-	enable_movement = start_new_movement = solved = true;
+	enable_movement = start_new_movement = false;
+	solved = true;
 }
 
 void Rubik::set_timer(const int& _timer)
@@ -449,12 +449,6 @@ void Rubik::move(const Matrix4D& transform)
 	{
 		Cubes[i]->transform(transform);
 	}
-}
-
-void Rubik::set_camera(Camera camera)
-{
-	for (int i = 0; i < Cubes.size(); i++)
-		Cubes[i]->set_camera(camera);
 }
 
 void Rubik::look_for_movement()

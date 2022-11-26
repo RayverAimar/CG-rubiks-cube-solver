@@ -19,7 +19,6 @@ public:
 	void setUp();
 	void render();
 	void transform(const Matrix4D&);
-	void set_camera(Camera);
 
 	/* Getters */
 
@@ -84,27 +83,6 @@ void Cube::setUp()
 	{
 		squares[i]->setUp();
 	}
-}
-
-void Cube::set_camera(Camera camera)
-{
-	green_shader.use();
-	green_shader.set_camera(camera);
-
-	yellow_shader.use();
-	yellow_shader.set_camera(camera);
-
-	blue_shader.use();
-	blue_shader.set_camera(camera);
-
-	white_shader.use();
-	white_shader.set_camera(camera);
-
-	red_shader.use();
-	red_shader.set_camera(camera);
-
-	black_shader.use();
-	black_shader.set_camera(camera);
 }
 
 void Cube::render()

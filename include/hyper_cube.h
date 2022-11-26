@@ -17,6 +17,8 @@ public:
 	std::vector<Rubik*> Rubiks;
 private:
 	
+	Point get_center();
+
 	void look_for_movement();
 	void stop_current_movement();
 	void disable();
@@ -87,7 +89,7 @@ HyperCube::~HyperCube()
 
 void HyperCube::stop_current_movement()
 {
-
+	expanding = enable_movement = false;
 }
 
 void HyperCube::look_for_movement()
@@ -106,7 +108,10 @@ void HyperCube::expand()
 	for (int i = 0; i < Rubiks.size(); i++)
 	{
 		Matrix4D transform(1.0f);
-
+		Vector3D dir = Rubiks[i]->get_center() - this->get_center();
+		dir = dir.unit();
+		transform.translate(dir.direction);
+		Rubiks[i]->move(transform);
 	}
 }
 
@@ -125,5 +130,9 @@ void HyperCube::next()
 	cur_cube = &Rubiks[cur_cube_index];
 }
 
+Point HyperCube::get_center()
+{
+	return Rubiks[13]->get_center();
+}
 
 #endif // !__HYPER_CUBE_H__
