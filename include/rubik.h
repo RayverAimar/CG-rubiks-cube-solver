@@ -25,7 +25,7 @@ public:
 	void enable();
 	void set_timer(const int&);
 	void set_speed(const float&);
-	void read_moves();
+	void read_moves(const std::string&);
 	void disable();
 	void append(const char&);
 	void append(const std::string&);
@@ -41,15 +41,17 @@ public:
 	/* Variables */
 
 	std::vector<Cube*> Cubes;
-	std::vector<Cube**> Frontal_Litter, Back_Litter, Up_Litter, Down_Litter, Left_Litter, Right_Litter, Middle_Litter, E_Litter, S_Litter;
-	std::queue<char> solution;
-	std::string moves, history;
-	bool f = false, fPrime = false, d = false, dPrime = false, u = false, uPrime = false, b = false, bPrime = false, r = false, rPrime = false;
-	bool l = false, lPrime = false, m = false, mPrime = false, e = false, ePrime = false, s = false, sPrime = false;
+	std::vector<Cube**> Frontal_Litter, Back_Litter, Up_Litter, Down_Litter, Left_Litter, Right_Litter;
+	std::queue<char> moves;
+	std::string to_scramble, to_solve;
+	bool f = false, fPrime = false, d = false, dPrime = false, u = false, uPrime = false, b = false, bPrime = false;
+	bool r = false, rPrime = false, l = false, lPrime = false, retreating = false, solved = true, stopped = true;
+	bool solution_entered = false, scrambling = false, scrambled = false;
 
+	Matrix4D to_retreat;
 private:
 	int timer, n_moves = 0;
-	bool enable_movement, start_new_movement, solved;
+	bool enable_movement, start_new_movement;
 	float chunk;
 	
 	/* Movements Methods */
@@ -75,24 +77,15 @@ private:
 	void BPrime();
 	void RPrime();
 	void LPrime();
-
-	/* External Movements */
-
-	void M();
-	void E();
-	void S();
-
-	void MPrime();
-	void EPrime();
-	void SPrime();
 	
+	void retreat();
 };
 
-Rubik::Rubik() : timer(0), enable_movement(false), start_new_movement(false), chunk(0.75f), solved(true)
+Rubik::Rubik() : timer(0), enable_movement(false), start_new_movement(false), chunk(0.75f)
 {
 }
 
-Rubik::Rubik(const Point& center, const float& separation) : timer(0), enable_movement(false), start_new_movement(false), chunk(0.75f), solved(true)
+Rubik::Rubik(const Point& center, const float& separation) : timer(0), enable_movement(false), start_new_movement(false), chunk(0.75f)
 {
 	Point frontal_litter_center_1(center.x - separation,	center.y - separation,		center.z);						/* Bottom Litter 0 */		/* Left Litter 0  */	
 	Point frontal_litter_center_2(center.x,					center.y - separation,		center.z);						/* Bottom Litter 1 */														/* M Litter 1  */
@@ -143,9 +136,6 @@ Rubik::Rubik(const Point& center, const float& separation) : timer(0), enable_mo
 		Down_Litter.push_back(&Cubes[down_litter_idx[i]]);
 		Left_Litter.push_back(&Cubes[left_litter_idx[i]]);
 		Right_Litter.push_back(&Cubes[right_litter_idx[i]]);
-		Middle_Litter.push_back(&Cubes[middle_litter_idx[i]]);
-		E_Litter.push_back(&Cubes[e_litter_idx[i]]);
-		S_Litter.push_back(&Cubes[s_litter_idx[i]]);
 	}
 }
 
@@ -161,12 +151,19 @@ bool Rubik::is_solved()
 
 void Rubik::solve()
 {
-	if (this->history.empty()) return;
-	std::string moves_to_solve = format_solution(get_solution(to_cube_not(string_to_vector(this->history))));
-	this->history.clear();
-	this->append(moves_to_solve);
-	this->read_moves();
+	if (this->to_scramble.empty()) return;
+	this->to_solve = format_solution(get_solution(to_cube_not(string_to_vector(this->to_scramble))));
+	this->read_moves(this->to_solve);
 	this->enable();
+	solution_entered = true;
+}
+
+void Rubik::retreat()
+{
+	for (int i = 0; i < Cubes.size(); i++)
+	{
+		Cubes[i]->transform(to_retreat);
+	}
 }
 
 void Rubik::scramble()
@@ -175,36 +172,32 @@ void Rubik::scramble()
 	for (int i = 0; i < n_moves; i++)
 	{
 		int movement_idx = rand() % 6;
-		this->history.push_back(valid_moves[movement_idx]);
-		this->moves.push_back(valid_moves[movement_idx]);
+		this->to_scramble.push_back(valid_moves[movement_idx]);
 	}
-	std::cout << this->moves << std::endl;
-	this->read_moves();
-	this->set_speed(3.0f);
+	std::cout << this->to_scramble << std::endl;
+	this->scrambling = true;
+	this->read_moves(this->to_scramble);
+	this->set_speed(6.0f);
 	this->enable();
 }
 
-void Rubik::read_moves()
+void Rubik::read_moves(const std::string &to_read)
 {
-	for (int i = 0; i < moves.size(); i++)
+	for (int i = 0; i < to_read.size(); i++)
 	{
-		solution.push(moves[i]);
+		moves.push(to_read[i]);
 	}
-	std::cout << this->moves << std::endl;
-	this->moves.clear();
 }
 
 void Rubik::append(const char &movement)
 {
-	this->moves.push_back(movement);
-	this->history.push_back(movement);
-	std::cout << this->moves << std::endl;
+	this->to_scramble.push_back(movement);
+	std::cout << this->to_scramble << std::endl;
 }
 
 void Rubik::append(const std::string &movements)
 {
-	this->moves.append(movements);
-	this->history.append(movements);
+	this->to_scramble.append(movements);
 }
 
 void Rubik::set_speed(const float& _chunk)
@@ -216,7 +209,6 @@ void Rubik::set_next_movement(char cur_movement)
 {
 	timer = (int)((90.0f / chunk) - 2);
 	start_new_movement = solved = false;
-	//n_moves = 0;
 	switch(cur_movement)
 	{
 		case F_MOVEMENT:
@@ -255,24 +247,6 @@ void Rubik::set_next_movement(char cur_movement)
 		case L_PRIME_MOVEMENT:
 			lPrime = true;
 			break;
-		case M_MOVEMENT:
-			m = true;
-			break;
-		case M_PRIME_MOVEMENT:
-			mPrime = true;
-			break;
-		case E_MOVEMENT:
-			e = true;
-			break;
-		case E_PRIME_MOVEMENT:
-			ePrime = true;
-			break;
-		case S_MOVEMENT:
-			s = true;
-			break;
-		case S_PRIME_MOVEMENT:
-			sPrime = true;
-			break;
 		default:
 			break;
 	}
@@ -281,7 +255,18 @@ void Rubik::set_next_movement(char cur_movement)
 void Rubik::disable()
 {
 	enable_movement = start_new_movement = false;
-	solved = true;
+	if (scrambling)
+	{
+		this->scrambled = true;
+		this->scrambling = false;
+	}
+
+	if (solution_entered)
+	{
+		this->solved = true;
+		this->solution_entered = false;
+		this->scrambled = false;
+	}
 }
 
 void Rubik::set_timer(const int& _timer)
@@ -330,96 +315,53 @@ void Rubik::stop_current_movement()
 {
 	if (f) {
 		reassign_pointers(Frontal_Litter, non_prime_pattern);
-		//std::cout << "Swapped F " << std::endl;
 	}
 	else if (fPrime)
 	{
 		reassign_pointers(Frontal_Litter, prime_pattern);
-		//std::cout << "Swapped F Prime " << std::endl;
 	}
 	else if (d)
 	{
 		reassign_pointers(Down_Litter, non_prime_pattern);
-		//std::cout << "Swapped D" << std::endl;
 	}
 	else if (dPrime)
 	{
 		reassign_pointers(Down_Litter, prime_pattern);
-		//std::cout << "Swapped D Prime " << std::endl;
 	}
 	else if (u)
 	{
 		reassign_pointers(Up_Litter, non_prime_pattern);
-		//std::cout << "Swapped U " << std::endl;
 	}
 	else if (uPrime)
 	{
 		reassign_pointers(Up_Litter, prime_pattern);
-		//std::cout << "Swapped U Prime " << std::endl;
 	}
 	else if (b)
 	{
 		reassign_pointers(Back_Litter, non_prime_pattern);
-		//std::cout << "Swapped B " << std::endl;
 	}
 	else if (bPrime)
 	{
 		reassign_pointers(Back_Litter, prime_pattern);
-		//std::cout << "Swapped B Prime" << std::endl;
 	}
 	else if (r)
 	{
 		reassign_pointers(Right_Litter, non_prime_pattern);
-		//std::cout << "Swapped R " << std::endl;
 	}
 	else if (rPrime)
 	{
 		reassign_pointers(Right_Litter, prime_pattern);
-		//std::cout << "Swapped R Prime" << std::endl;
 	}
 	else if (l)
 	{
 		reassign_pointers(Left_Litter, non_prime_pattern);
-		//std::cout << "Swapped L " << std::endl;
 	}
 	else if (lPrime)
 	{
 		reassign_pointers(Left_Litter, prime_pattern);
-		//std::cout << "Swapped L Prime " << std::endl;
 	}
-	else if (m)
-	{
-		reassign_pointers(Middle_Litter, non_prime_pattern);
-		//std::cout << "Swapped M " << std::endl;
-	}
-	else if (mPrime)
-	{
-		reassign_pointers(Middle_Litter, prime_pattern);
-		//std::cout << "Swapped M Prime" << std::endl;
-	}
-	else if (e)
-	{
-		reassign_pointers(E_Litter, non_prime_pattern);
-		//std::cout << "Swapped E " << std::endl;
-	}
-	else if (ePrime)
-	{
-		reassign_pointers(E_Litter, prime_pattern);
-		//std::cout << "Swapped E Prime " << std::endl;
-	}
-	else if (s)
-	{
-		reassign_pointers(S_Litter, non_prime_pattern);
-		//std::cout << "Swapped S " << std::endl;
-	}
-	else if (sPrime)
-	{
-		reassign_pointers(S_Litter, prime_pattern);
-		std::cout << "Swapped S Prime " << std::endl;
-	}
-	f =  fPrime = d = dPrime = u = uPrime = b = bPrime = r = rPrime = false;
-	l =  lPrime = m = mPrime = e = ePrime = s = sPrime = false;
-	if (solution.empty()) disable();
+	f =  fPrime = d = dPrime = u = uPrime = b = bPrime = r = rPrime = l = lPrime = false;
+	if (moves.empty()) disable();
 	else enable();
 }
 
@@ -460,13 +402,13 @@ void Rubik::look_for_movement()
 		return;
 	}
 
-	if (!solution.empty() && start_new_movement)
+	if (!moves.empty() && start_new_movement)
 	{
-		char next_movement = this->solution.front();
-		this->solution.pop();
+		char next_movement = this->moves.front();
+		this->moves.pop();
 		set_next_movement(next_movement);
 	}
-	if		(f)			F();
+	if (f)			F();
 	else if (fPrime)	FPrime();
 	else if (b)			B();
 	else if (bPrime)	BPrime();
@@ -483,15 +425,7 @@ void Rubik::look_for_movement()
 	else if (r)			R();
 	else if (rPrime)	RPrime();
 
-	else if (m)			M();
-	else if (mPrime)	MPrime();
-
-	else if (e)			E();
-	else if (ePrime)	EPrime();
-
-	else if (s)			S();
-	else if (sPrime)	SPrime();
-
+	else if (retreating) retreat();
 }
 
 void Rubik::F()
@@ -552,36 +486,6 @@ void Rubik::R()
 void Rubik::RPrime()
 {
 	rotate_litter(Right_Litter, X_AXIS, false);
-}
-
-void Rubik::M()
-{
-	rotate_litter(Middle_Litter, X_AXIS, true);
-}
-
-void Rubik::MPrime()
-{
-	rotate_litter(Middle_Litter, X_AXIS, false);
-}
-
-void Rubik::E()
-{
-	rotate_litter(E_Litter, Y_AXIS, false);
-}
-
-void Rubik::EPrime()
-{
-	rotate_litter(E_Litter, Y_AXIS, true);
-}
-
-void Rubik::S()
-{
-	rotate_litter(S_Litter, Z_AXIS, true);
-}
-
-void Rubik::SPrime()
-{
-	rotate_litter(S_Litter, Z_AXIS, false);
 }
 
 #endif //!__RUBIK_H__
