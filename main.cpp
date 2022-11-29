@@ -2,8 +2,6 @@
 #include "./include/menu.h"
 #include "./include/hyper_cube.h"
 
-//#define __EXTERNAL_MOVEMENTS__
-
 using namespace std;
 
 float diameter = 0.1f;
@@ -50,20 +48,13 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 
 	if (glfwGetKey(window, GLFW_KEY_ENTER) == GLFW_PRESS)
 	{
-		srand(time(NULL));
-		for (int i = 0; i < myHyperCube->Rubiks.size(); i++)
-		{
-			myHyperCube->Rubiks[i]->scramble();
-		}
+		myHyperCube->enable();
+		myHyperCube->set_expanding();
 	}
 	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
 	{
-		//(*myHyperCube->cur_cube)->solve();
 		std::cout << "Looking for best solution" << std::endl;
-		for (int i = 0; i < myHyperCube->Rubiks.size(); i++)
-		{
-			myHyperCube->Rubiks[i]->solve();
-		}
+		myHyperCube->solve();
 	}
 	if (prime)
 	{
@@ -91,24 +82,6 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 		{
 			(*myHyperCube->cur_cube)->append(L_PRIME_MOVEMENT);
 		}
-#ifdef __EXTERNAL_MOVEMENTS__
-		if (glfwGetKey(window, GLFW_KEY_M) == GLFW_PRESS)
-		{
-			moves.push_back(M_PRIME_MOVEMENT);
-			std::cout << moves << std::endl;
-		}
-		if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
-		{
-			moves.push_back(E_PRIME_MOVEMENT);
-			std::cout << moves << std::endl;
-		}
-		if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-		{
-			moves.push_back(S_PRIME_MOVEMENT);
-			std::cout << moves << std::endl;
-		}
-#endif // __EXTERNAL_MOVEMENTS__
-	
 	}
 	else
 	{
@@ -136,23 +109,5 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 		{
 			(*myHyperCube->cur_cube)->append(L_MOVEMENT);
 		}
-#ifdef __EXTERNAL_MOVEMENTS__
-
-		if (glfwGetKey(window, GLFW_KEY_M) == GLFW_PRESS)
-		{
-			moves.push_back(M_MOVEMENT);
-			std::cout << moves << std::endl;
-		}
-		if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
-		{
-			moves.push_back(E_MOVEMENT);
-			std::cout << moves << std::endl;
-		}
-		if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-		{
-			moves.push_back(S_MOVEMENT);
-			std::cout << moves << std::endl;
-		}
-#endif // __EXTERNAL_MOVEMENTS__
 	}
 }
