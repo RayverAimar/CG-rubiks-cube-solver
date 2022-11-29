@@ -77,15 +77,6 @@ std::string format_solution(std::vector<std::string> movements)
                 case R_MOVEMENT:
                     formatted.push_back(R_PRIME_MOVEMENT);
                     break;
-                case M_MOVEMENT:
-                    formatted.push_back(M_PRIME_MOVEMENT);
-                    break;
-                case E_MOVEMENT:
-                    formatted.push_back(E_PRIME_MOVEMENT);
-                    break;
-                case S_MOVEMENT:
-                    formatted.push_back(S_PRIME_MOVEMENT);
-                    break;
                 default:
                     break;
                 }
