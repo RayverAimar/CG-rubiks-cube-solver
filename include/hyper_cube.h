@@ -12,9 +12,16 @@ public:
 	void render();
 	void enable();
 	void next();
+	void solve();
+
+	void set_expanding();
+	void set_solving();
 
 	Rubik** cur_cube = nullptr;
 	std::vector<Rubik*> Rubiks;
+
+	bool solving = false;
+
 private:
 	
 	Point get_center();
@@ -23,9 +30,10 @@ private:
 	void stop_current_movement();
 	void disable();
 	void expand();
+	void retreat();
 
 	int cur_cube_index, timer;
-	bool enable_movement = false, expanding = false;
+	bool enable_movement = false, expanding = false, retreating = false, totally_scrambled = true;
 };
 
 HyperCube::HyperCube() : cur_cube(nullptr), cur_cube_index(0), timer(0)
@@ -87,9 +95,42 @@ HyperCube::~HyperCube()
 
 }
 
+void HyperCube::disable()
+{
+
+}
+
+void HyperCube::set_expanding()
+{
+	expanding = true;
+}
+
+void HyperCube::set_solving()
+{
+	solving = true;
+}
+
 void HyperCube::stop_current_movement()
 {
-	expanding = enable_movement = false;
+	if (expanding)
+	{
+		expanding = retreating = enable_movement = false;
+		for (int i = 0; i < Rubiks.size(); i++)
+		{
+			Rubiks[i]->scramble();
+		}
+		totally_scrambled = false;
+	}
+}
+
+void HyperCube::solve()
+{
+	this->solving = true;
+	for (int i = 0; i < Rubiks.size(); i++)
+	{
+		Rubiks[i]->solved = false;
+		Rubiks[i]->solve();
+	}
 }
 
 void HyperCube::look_for_movement()
@@ -103,23 +144,79 @@ void HyperCube::look_for_movement()
 	if (expanding) expand();
 }
 
+void HyperCube::enable()
+{
+	enable_movement = true;
+	this->timer = 50;
+}
+
 void HyperCube::expand()
 {
 	for (int i = 0; i < Rubiks.size(); i++)
 	{
 		Matrix4D transform(1.0f);
 		Vector3D dir = Rubiks[i]->get_center() - this->get_center();
-		dir = dir.unit();
+		dir.direction /= 100;
 		transform.translate(dir.direction);
 		Rubiks[i]->move(transform);
 	}
 }
 
+void HyperCube::retreat()
+{
+	bool all_solved = true;
+	for (int i = 0; i < Rubiks.size(); i++)
+	{
+		if (!Rubiks[i]->is_solved())
+		{
+			all_solved = false;
+			continue;
+		}
+		if (Rubiks[i]->stopped)
+		{
+			std::cout << "Rubiks[" << i << "] started retreating" << std::endl;
+			Matrix4D transform(1.0f);
+			Vector3D dir = this->get_center() - Rubiks[i]->get_center();
+			dir.direction /= 100;
+			transform.translate(dir.direction);
+			Rubiks[i]->to_retreat = transform;
+			Rubiks[i]->retreating = true;
+			Rubiks[i]->enable();
+			Rubiks[i]->set_timer(35);
+			Rubiks[i]->stopped = false;
+		}
+	}
+	if (all_solved) solving = false;
+}
+
 void HyperCube::render()
 {
+	look_for_movement();
+	if (solving) retreat();
+
+	
 	for (int i = 0; i < Rubiks.size(); i++)
 	{
 		Rubiks[i]->render();
+	}
+
+	if (!totally_scrambled)
+	{
+		bool all_scrambled = true;
+
+		for (int i = 0; i < Rubiks.size(); i++)
+		{
+			if (!Rubiks[i]->scrambled)
+			{
+				all_scrambled = false;
+			}
+		}
+		if (all_scrambled)
+		{
+			std::cout << "All Scrambled!" << std::endl;
+			totally_scrambled = true;
+			this->solve();
+		}
 	}
 }
 
