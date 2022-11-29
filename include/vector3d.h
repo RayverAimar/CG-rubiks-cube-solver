@@ -108,7 +108,9 @@ Vector3D& Vector3D::operator -= (const Vector3D& _vector)
 Vector3D Vector3D::unit()
 {
     Vector3D to_return(*this);
-    to_return.direction /= this->norm();
+    to_return.direction.x /= this->norm();
+    to_return.direction.y /= this->norm();
+    to_return.direction.z /= this->norm();
     return to_return;
 }
 
