@@ -42,6 +42,18 @@
 #define WHITE_COLOR							glm::vec4(0.9411f, 0.9254f, 0.9529f, 1.0f)
 #define BLACK_COLOR							glm::vec4(0.1215f, 0.1254f, 0.1254f, 1.0f)
 
+/* Camera */
+#include "./camera.h"
+
+static Camera* camera = new Camera(glm::vec3(0.0f, 0.0f, 3.0f));
+static float lastX = SCR_WIDTH / 2.0f;
+static float lastY = SCR_HEIGHT / 2.0f;
+static bool firstMouse = true;
+
+// Camera timing
+static float deltaTime = 0.0f;
+static float lastFrame = 0.0f;
+
 const char valid_moves[] = { F_MOVEMENT, D_MOVEMENT, U_MOVEMENT, B_MOVEMENT, R_MOVEMENT, L_MOVEMENT,
 							 F_PRIME_MOVEMENT, D_PRIME_MOVEMENT, U_PRIME_MOVEMENT, B_PRIME_MOVEMENT, R_PRIME_MOVEMENT, L_PRIME_MOVEMENT };
 
