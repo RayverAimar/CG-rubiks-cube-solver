@@ -12,12 +12,7 @@
 #define PI									3.14159265359
 #define to_radians(x)						(x * (float) PI ) / 180.0f
 
-#define GREEN_FRAGMENT_SHADER_PATH			"..\\..\\..\\..\\..\\src\\Tutorial_Rubik\\shaders\\green.fs"
-#define WHITE_FRAGMENT_SHADER_PATH			"..\\..\\..\\..\\..\\src\\Tutorial_Rubik\\shaders\\white.fs"
-#define BLACK_FRAGMENT_SHADER_PATH			"..\\..\\..\\..\\..\\src\\Tutorial_Rubik\\shaders\\black.fs"
-#define BLUE_FRAGMENT_SHADER_PATH			"..\\..\\..\\..\\..\\src\\Tutorial_Rubik\\shaders\\blue.fs"
-#define YELLOW_FRAGMENT_SHADER_PATH			"..\\..\\..\\..\\..\\src\\Tutorial_Rubik\\shaders\\yellow.fs"
-#define RED_FRAGMENT_SHADER_PATH			"..\\..\\..\\..\\..\\src\\Tutorial_Rubik\\shaders\\red.fs"
+#define CUBE_FRAGMENT_SHADER_PATH			"..\\..\\..\\..\\..\\src\\Tutorial_Rubik\\shaders\\fShader.fs"
 #define FRAGMENT_SHADER_PATH				"..\\..\\..\\..\\..\\src\\Tutorial_Rubik\\shaders\\fragment_shader.fs"
 #define VERTEX_SHADER_PATH					"..\\..\\..\\..\\..\\src\\Tutorial_Rubik\\shaders\\vertex_shader.vs"
 
@@ -39,10 +34,19 @@
 #define R_PRIME_MOVEMENT					'r'
 #define L_PRIME_MOVEMENT					'l'
 
+#define BLUE_COLOR							glm::vec4(0.1882f, 0.6588f, 0.9568f, 1.0f)
+#define RED_COLOR							glm::vec4(0.9960f, 0.3529f, 0.3490f, 1.0f)
+#define YELLOW_COLOR						glm::vec4(1.0000f, 0.9921f, 0.3254f, 1.0f)
+#define ORANGE_COLOR						glm::vec4(1.0000f, 0.4862f, 0.2745f, 1.0f)
+#define GREEN_COLOR							glm::vec4(0.5372f, 0.9490f, 0.4431f, 1.0f)
+#define WHITE_COLOR							glm::vec4(0.9411f, 0.9254f, 0.9529f, 1.0f)
+#define BLACK_COLOR							glm::vec4(0.1215f, 0.1254f, 0.1254f, 1.0f)
+
 const char valid_moves[] = { F_MOVEMENT, D_MOVEMENT, U_MOVEMENT, B_MOVEMENT, R_MOVEMENT, L_MOVEMENT,
-F_PRIME_MOVEMENT, D_PRIME_MOVEMENT, U_PRIME_MOVEMENT, B_PRIME_MOVEMENT, R_PRIME_MOVEMENT, L_PRIME_MOVEMENT };
-const unsigned int prime_pattern[] = {2, 5, 8, 1, 4, 7, 0, 3, 6};
-const unsigned int non_prime_pattern[] = {6, 3, 0 , 7, 4, 1, 8, 5, 2};
+							 F_PRIME_MOVEMENT, D_PRIME_MOVEMENT, U_PRIME_MOVEMENT, B_PRIME_MOVEMENT, R_PRIME_MOVEMENT, L_PRIME_MOVEMENT };
+
+const unsigned int prime_pattern[]		= { 2, 5, 8, 1, 4, 7, 0, 3, 6};
+const unsigned int non_prime_pattern[]	= { 6, 3, 0 , 7, 4, 1, 8, 5, 2};
 
 const unsigned int frontal_litter_idx[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8 };
 const unsigned int back_litter_idx[]	= { 20, 19, 18, 23, 22, 21, 26, 25, 24 };

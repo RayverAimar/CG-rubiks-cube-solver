@@ -99,7 +99,7 @@ void Square::setUp()
 
 	glBindVertexArray(this->VAO);
 	glBindBuffer(GL_ARRAY_BUFFER, this->VBO[0]); /* Vertices */
-	glBufferData(GL_ARRAY_BUFFER, sizeof(this->get_vertices()) * this->size(), &this->front(), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, this->size() * sizeof(this->front()), &this->front(), GL_STATIC_DRAW);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Point), (void*)0);
 	glEnableVertexAttribArray(0);
 
@@ -108,7 +108,7 @@ void Square::setUp()
 	/* Binding Element Buffer Object */
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->EBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(this->indices) * this->indices.size(), &this->indices.front(), GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, this->indices.size() * sizeof(this->indices.front()), &this->indices.front(), GL_STATIC_DRAW);
 
 	/* Unbinding Buffers */
 
@@ -128,7 +128,7 @@ void Square::update()
 {
 	glBindVertexArray(this->VAO);
 	glBindBuffer(GL_ARRAY_BUFFER, this->VBO[0]);
-	glBufferData(GL_ARRAY_BUFFER, this->size() * sizeof(this->get_vertices()), &this->front(), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, this->size() * sizeof(this->front()), &this->front(), GL_STATIC_DRAW);
 }
 
 Point Square::get_center()
