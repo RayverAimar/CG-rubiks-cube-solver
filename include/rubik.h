@@ -33,6 +33,9 @@ public:
 	bool is_solved();
 	void solve();
 	void scramble();
+	void transform(const Matrix4D&);
+
+	void rotation_reassign(const std::vector<Cube**>&, const unsigned int*);
 
 	/* Getters */
 
@@ -41,7 +44,7 @@ public:
 	/* Variables */
 
 	std::vector<Cube*> Cubes;
-	std::vector<Cube**> Frontal_Litter, Back_Litter, Up_Litter, Down_Litter, Left_Litter, Right_Litter;
+	std::vector<Cube**> Frontal_Litter, Back_Litter, Up_Litter, Down_Litter, Left_Litter, Right_Litter, x_view, y_view, z_view;
 	std::queue<char> moves;
 	std::string to_scramble, to_solve;
 	bool f = false, fPrime = false, d = false, dPrime = false, u = false, uPrime = false, b = false, bPrime = false;
@@ -79,6 +82,7 @@ private:
 	void LPrime();
 	
 	void retreat();
+
 };
 
 Rubik::Rubik() : timer(0), enable_movement(false), start_new_movement(false), chunk(0.75f)
@@ -137,6 +141,14 @@ Rubik::Rubik(const Point& center, const float& separation) : timer(0), enable_mo
 		Left_Litter.push_back(&Cubes[left_litter_idx[i]]);
 		Right_Litter.push_back(&Cubes[right_litter_idx[i]]);
 	}
+
+	for (int i = 0; i < 27; i++)
+	{
+		x_view.push_back(&Cubes[x_view_idx[i]]);
+		y_view.push_back(&Cubes[y_view_idx[i]]);
+		z_view.push_back(&Cubes[z_view_idx[i]]);
+	}
+
 }
 
 Rubik::~Rubik()
@@ -148,6 +160,20 @@ bool Rubik::is_solved()
 	return this->solved;
 }
 
+void Rubik::rotation_reassign(const std::vector<Cube**>& cur_view, const unsigned int* pattern)
+{
+	std::vector<Cube*> new_cubes;
+
+	for (int i = 0; i < cur_view.size(); i++)
+	{
+		new_cubes.push_back(*cur_view[i]);
+	}
+
+	for (int i = 0; i < cur_view.size(); i++)
+	{
+		*cur_view[i] = new_cubes[pattern[i]];
+	}
+}
 
 void Rubik::solve()
 {
@@ -163,6 +189,14 @@ void Rubik::retreat()
 	for (int i = 0; i < Cubes.size(); i++)
 	{
 		Cubes[i]->transform(to_retreat);
+	}
+}
+
+void Rubik::transform(const Matrix4D& transformation)
+{
+	for (size_t i = 0; i < Cubes.size(); i++)
+	{
+		Cubes[i]->transform(transformation);
 	}
 }
 
@@ -406,9 +440,9 @@ void Rubik::look_for_movement()
 	{
 		char next_movement = this->moves.front();
 		this->moves.pop();
-		set_next_movement(next_movement);
+		this->set_next_movement(next_movement);
 	}
-	if (f)			F();
+	if (f)				F();
 	else if (fPrime)	FPrime();
 	else if (b)			B();
 	else if (bPrime)	BPrime();
