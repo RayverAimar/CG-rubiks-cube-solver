@@ -53,8 +53,7 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	}
 	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
 	{
-		std::cout << "Looking for best solution" << std::endl;
-		myHyperCube->solve();
+		myHyperCube->scramble();
 	}
 	if (prime)
 	{
