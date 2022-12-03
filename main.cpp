@@ -20,9 +20,12 @@ int main()
 	
 	while (OpenGL.isOpen())
 	{
-
 		OpenGL.clearBuffers();
 		
+		float currentFrame = static_cast<float>(glfwGetTime());
+		deltaTime = currentFrame - lastFrame;
+		lastFrame = currentFrame;
+	
 		myHyperCube->render();
 
 		OpenGL.update();
@@ -109,4 +112,39 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 			(*myHyperCube->cur_cube)->append(L_MOVEMENT);
 		}
 	}
+
+	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+		camera->ProcessKeyboard(FORWARD, deltaTime);
+	if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+		camera->ProcessKeyboard(BACKWARD, deltaTime);
+	if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
+		camera->ProcessKeyboard(LEFT, deltaTime);
+	if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
+		camera->ProcessKeyboard(RIGHT, deltaTime);
+}
+
+void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
+{
+	float xpos = static_cast<float>(xposIn);
+	float ypos = static_cast<float>(yposIn);
+
+	if (firstMouse)
+	{
+		lastX = xpos;
+		lastY = ypos;
+		firstMouse = false;
+	}
+
+	float xoffset = xpos - lastX;
+	float yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
+
+	lastX = xpos;
+	lastY = ypos;
+
+	camera->ProcessMouseMovement(xoffset, yoffset);
+}
+
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+{
+	camera->ProcessMouseScroll(static_cast<float>(yoffset));
 }
