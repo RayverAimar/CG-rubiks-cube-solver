@@ -27,7 +27,7 @@ public:
 	std::vector<Square*> squares;
 	
 private:
-	Shader green_shader, red_shader, yellow_shader, white_shader, blue_shader, black_shader;
+	Shader cube_colors;
 };
 
 Cube::Cube()
@@ -36,12 +36,7 @@ Cube::Cube()
 
 Cube::Cube(const Point& center, const float& separation)
 {
-	green_shader	= Shader(VERTEX_SHADER_PATH, GREEN_FRAGMENT_SHADER_PATH);
-	red_shader		= Shader(VERTEX_SHADER_PATH, RED_FRAGMENT_SHADER_PATH);
-	yellow_shader	= Shader(VERTEX_SHADER_PATH, YELLOW_FRAGMENT_SHADER_PATH);
-	white_shader	= Shader(VERTEX_SHADER_PATH, WHITE_FRAGMENT_SHADER_PATH);
-	blue_shader		= Shader(VERTEX_SHADER_PATH, BLUE_FRAGMENT_SHADER_PATH);
-	black_shader	= Shader(VERTEX_SHADER_PATH, BLACK_FRAGMENT_SHADER_PATH);
+	cube_colors = Shader(VERTEX_SHADER_PATH, CUBE_FRAGMENT_SHADER_PATH);
 	
 	std::vector<Point> centers(6);
 
@@ -87,34 +82,30 @@ void Cube::setUp()
 
 void Cube::render()
 {
+	cube_colors.use();
+	cube_colors.classical_movement();
 
-	green_shader.use();
-	green_shader.classical_movement();
+	cube_colors.setVec4Color("ourColor", GREEN_COLOR);
 
 	this->squares[0]->render();
 	
-	blue_shader.use();
-	blue_shader.classical_movement();
+	cube_colors.setVec4Color("ourColor", BLUE_COLOR);
 	
 	this->squares[5]->render();
 
-	yellow_shader.use();
-	yellow_shader.classical_movement();
+	cube_colors.setVec4Color("ourColor", YELLOW_COLOR);
 
 	this->squares[1]->render();
 	
-	black_shader.use();
-	black_shader.classical_movement();
+	cube_colors.setVec4Color("ourColor", BLACK_COLOR);
 
 	this->squares[4]->render();
 
-	red_shader.use();
-	red_shader.classical_movement();
+	cube_colors.setVec4Color("ourColor", RED_COLOR);
 
 	this->squares[2]->render();
 	
-	white_shader.use();
-	white_shader.classical_movement();
+	cube_colors.setVec4Color("ourColor", WHITE_COLOR);
 
 	this->squares[3]->render();
 }
