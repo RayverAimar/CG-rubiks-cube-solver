@@ -1,26 +1,35 @@
 #ifndef __HYPER_CUBE_H__
 
-#include "rubik.h"
+#include "./rubik.h"
 
 class HyperCube
 {
 public:
+	
+	/* Constructors & Destructors */
+
 	HyperCube();
 	HyperCube(const Point&, float);
 	~HyperCube();
 
-	void render();
+	/* Auxiliar methods */
+
+	void disable();
 	void enable();
 	void next();
+	void read_moves(const std::string&);
+	void render();
+	void scramble();
 	void solve_Rubiks();
+
+	/* Setters */
 
 	void set_expanding();
 	void set_solving();
-	void set_timer(const int&);
-	void scramble();
 	void set_speed(const float&);
-	void disable();
-	void read_moves(const std::string&);
+	void set_timer(const int&);
+
+	/* Variables */
 
 	Rubik** cur_cube = nullptr;
 	std::vector<Rubik*> Rubiks;
@@ -28,27 +37,30 @@ public:
 	std::queue<char> moves;
 	std::string to_scramble, to_solve;
 	bool f = false, fPrime = false, d = false, dPrime = false, u = false, uPrime = false, b = false, bPrime = false;
-	bool r = false, rPrime = false, l = false, lPrime = false;
-
-	bool solving = false;
+	bool r = false, rPrime = false, l = false, lPrime = false, solving = false;
 
 private:
 	int timer = 0;
 	float chunk = 0;
-	bool start_new_movement;
+	bool start_new_movement = false;
 
+	/* Auxiliar methods */
+
+	void correct_orientation(const std::vector<Rubik**>&, const unsigned int&, const unsigned int*);
+	void expand();
+	void look_for_movement();
+	void reassign_pointers(const std::vector<Rubik**>&, const unsigned int*);
+	void retreat();
+	void rotate_litter(const std::vector<Rubik**>&, const unsigned int&, const bool&);
+	void set_next_movement(char);
+	void solve();
+	void stop_current_movement();
+	
+	/* Getters */
 
 	Point get_center();
 
-	void look_for_movement();
-	void stop_current_movement();
-	void expand();
-	void retreat();
-	void solve();
-
-	void rotate_litter(const std::vector<Rubik**>&, const unsigned int&, const bool&);
-	void reassign_pointers(const std::vector<Rubik**>&, const unsigned int*);
-	void set_next_movement(char);
+	/* Rubik movements methods */
 
 	void F();
 	void D();
@@ -64,12 +76,16 @@ private:
 	void RPrime();
 	void LPrime();
 
-	void correct_orientation(const std::vector<Rubik**>&, const unsigned int&, const unsigned int*);
+	/* Variables */
 
 	int cur_cube_index;
 	bool enable_movement = false, expanding = false, retreating = false, totally_scrambled = true;
 	bool scrambling = false, scrambled = false, solved = true, solution_entered = false;
 };
+
+/* BEGIN: public HyperCube methods implementations */
+
+	/* BEGIN: auxiliar methods implementations */
 
 HyperCube::HyperCube() : cur_cube(nullptr), cur_cube_index(0), timer(0)
 {
@@ -141,36 +157,6 @@ HyperCube::~HyperCube()
 
 }
 
-void HyperCube::scramble()
-{
-	int n_moves = rand() % 30 + 10;
-	for (int i = 0; i < n_moves; i++)
-	{
-		int movement_idx = rand() % 6;
-		this->to_scramble.push_back(valid_moves[movement_idx]);
-	}
-	//this->to_scramble = "DL";
-	std::cout << this->to_scramble << std::endl;
-	this->scrambling = true;
-	this->read_moves(this->to_scramble);
-	this->set_speed(3.0f);
-	this->enable();
-}
-
-void HyperCube::solve()
-{
-	if (this->to_scramble.empty()) return;
-	this->to_solve	= format_solution(get_solution(to_cube_not(string_to_vector(this->to_scramble))));
-	this->read_moves(this->to_solve);
-	this->enable();
-	solution_entered = true;
-}
-
-void HyperCube::set_speed(const float& _chunk)
-{
-	this->chunk = _chunk;
-}
-
 void HyperCube::disable()
 {
 	enable_movement = start_new_movement = false;
@@ -187,11 +173,17 @@ void HyperCube::disable()
 	}
 }
 
-void HyperCube::set_expanding()
+void HyperCube::enable()
 {
-	expanding = true;
-	this->enable_movement = true;
-	this->timer = 50;
+	enable_movement = start_new_movement = true;
+	this->timer = (int)((90.0f / chunk) - 2);
+}
+
+void HyperCube::next()
+{
+	this->cur_cube_index++;
+	cur_cube_index %= Rubiks.size();
+	cur_cube = &Rubiks[cur_cube_index];
 }
 
 void HyperCube::read_moves(const std::string& to_read)
@@ -202,51 +194,71 @@ void HyperCube::read_moves(const std::string& to_read)
 	}
 }
 
-void HyperCube::set_next_movement(char cur_movement)
+void HyperCube::render()
 {
-	timer = (int)((90.0f / chunk) - 2);
-	start_new_movement = false;
-	switch(cur_movement)
+	look_for_movement();
+	if (solving) retreat();
+
+	for (int i = 0; i < Rubiks.size(); i++)
 	{
-		case F_MOVEMENT:
-			f = true;
-			break;
-		case F_PRIME_MOVEMENT:
-			fPrime = true;
-			break;
-		case D_MOVEMENT:
-			d = true;
-			break;
-		case D_PRIME_MOVEMENT:
-			dPrime = true;
-			break;
-		case U_MOVEMENT:
-			u = true;
-			break;
-		case U_PRIME_MOVEMENT:
-			uPrime = true;
-			break;
-		case B_MOVEMENT:
-			b = true;
-			break;
-		case B_PRIME_MOVEMENT:
-			bPrime = true;
-			break;
-		case R_MOVEMENT:
-			r = true;
-			break;
-		case R_PRIME_MOVEMENT:
-			rPrime = true;
-			break;
-		case L_MOVEMENT:
-			l = true;
-			break;
-		case L_PRIME_MOVEMENT:
-			lPrime = true;
-			break;
-		default:
-			break;
+		Rubiks[i]->render();
 	}
+
+	if (!totally_scrambled)
+	{
+		bool all_scrambled = true;
+
+		for (int i = 0; i < Rubiks.size(); i++)
+		{
+			if (!Rubiks[i]->scrambled)
+			{
+				all_scrambled = false;
+			}
+		}
+		if (all_scrambled)
+		{
+			std::cout << "All Scrambled!" << std::endl;
+			totally_scrambled = true;
+			this->solve_Rubiks();
+		}
+	}
+}
+
+void HyperCube::scramble()
+{
+	int n_moves = rand() % 30 + 10;
+	for (int i = 0; i < n_moves; i++)
+	{
+		int movement_idx = rand() % 6;
+		this->to_scramble.push_back(valid_moves[movement_idx]);
+	}
+	std::cout << this->to_scramble << std::endl;
+	this->scrambling = true;
+	this->read_moves(this->to_scramble);
+	this->set_speed(3.0f);
+	this->enable();
+}
+
+void HyperCube::solve_Rubiks()
+{
+	this->solving = true;
+	for (int i = 0; i < Rubiks.size(); i++)
+	{
+		Rubiks[i]->solved = false;
+		Rubiks[i]->solve();
+	}
+}
+
+	/* END: auxiliar methods implementations */
+
+
+	/* BEGIN: setters implementations */
+
+void HyperCube::set_expanding()
+{
+	expanding = true;
+	this->enable_movement = true;
+	this->timer = 50;
 }
 
 void HyperCube::set_solving()
@@ -254,7 +266,27 @@ void HyperCube::set_solving()
 	solving = true;
 }
 
-void HyperCube::correct_orientation(const std::vector<Rubik**> &cur_litter, const unsigned int &axis, const unsigned int* pattern)
+void HyperCube::set_speed(const float& _chunk)
+{
+	this->chunk = _chunk;
+}
+
+void HyperCube::set_timer(const int& _timer)
+{
+	this->timer = _timer;
+}
+
+	/* END: setters implementations */
+
+/* END: public HyperCube methods implementations */
+
+
+
+/* BEGIN: private HyperCube methods implementations */
+
+	/* BEGIN: auxiliar methods implementations */
+
+void HyperCube::correct_orientation(const std::vector<Rubik**>& cur_litter, const unsigned int& axis, const unsigned int* pattern)
 {
 	for (int i = 0; i < cur_litter.size(); i++)
 	{
@@ -271,6 +303,167 @@ void HyperCube::correct_orientation(const std::vector<Rubik**> &cur_litter, cons
 			(*cur_litter[i])->rotation_reassign((*cur_litter[i])->z_view, pattern);
 		}
 	}
+}
+
+void HyperCube::expand()
+{
+	for (int i = 0; i < Rubiks.size(); i++)
+	{
+		Matrix4D transform(1.0f);
+		Vector3D dir = Rubiks[i]->get_center() - this->get_center();
+		dir.direction /= 100;
+		transform.translate(dir.direction);
+		Rubiks[i]->move(transform);
+	}
+}
+
+void HyperCube::look_for_movement()
+{
+	if (!enable_movement) return;
+
+	if (this->timer-- < 0)
+	{
+		stop_current_movement();
+		return;
+	}
+	if (!moves.empty() && start_new_movement)
+	{
+		char next_movement = this->moves.front();
+		this->moves.pop();
+		this->set_next_movement(next_movement);
+	}
+	if (f)				F();
+	else if (fPrime)	FPrime();
+	else if (b)			B();
+	else if (bPrime)	BPrime();
+
+	else if (u)			U();
+	else if (uPrime)	UPrime();
+
+	else if (d)			D();
+	else if (dPrime)	DPrime();
+
+	else if (l)			L();
+	else if (lPrime)	LPrime();
+
+	else if (r)			R();
+	else if (rPrime)	RPrime();
+	else if (expanding) expand();
+}
+
+void HyperCube::reassign_pointers(const std::vector<Rubik**>& cur_litter, const unsigned int* pattern)
+{
+	std::vector<Rubik*> new_litter;
+	for (int i = 0; i < cur_litter.size(); i++)
+	{
+		new_litter.push_back(*cur_litter[i]);
+	}
+	for (int i = 0; i < cur_litter.size(); i++)
+	{
+		*cur_litter[i] = new_litter[pattern[i]];
+	}
+}
+
+void HyperCube::retreat()
+{
+	bool all_solved = true;
+	for (int i = 0; i < Rubiks.size(); i++)
+	{
+		if (!Rubiks[i]->is_solved())
+		{
+			all_solved = false;
+			continue;
+		}
+		if (Rubiks[i]->stopped)
+		{
+			std::cout << "Rubiks[" << i << "] started retreating" << std::endl;
+			Matrix4D transform(1.0f);
+			Vector3D dir = this->get_center() - Rubiks[i]->get_center();
+			dir.direction /= 100;
+			transform.translate(dir.direction);
+			Rubiks[i]->to_retreat = transform;
+			Rubiks[i]->retreating = true;
+			Rubiks[i]->enable();
+			Rubiks[i]->set_timer(35);
+			Rubiks[i]->stopped = false;
+		}
+	}
+	if (all_solved)
+	{
+		solving = false;
+		this->solve();
+	}
+}
+
+void HyperCube::rotate_litter(const std::vector<Rubik**>& cur_litter, const unsigned int& axis, const bool& clockwise)
+{
+	int direction = clockwise ? 1 : -1;
+	Point cur_center = (*cur_litter[4])->get_center();
+	Matrix4D transform(1.0f);
+	transform.translate(cur_center.x, cur_center.y, cur_center.z);
+	transform.rotate(chunk * direction, axis);
+	transform.translate(-cur_center.x, -cur_center.y, -cur_center.z);
+
+	for (int i = 0; i < cur_litter.size(); i++)
+	{
+		(*cur_litter[i])->transform(transform);
+	}
+}
+
+void HyperCube::set_next_movement(char cur_movement)
+{
+	timer = (int)((90.0f / chunk) - 2);
+	start_new_movement = false;
+	switch (cur_movement)
+	{
+	case F_MOVEMENT:
+		f = true;
+		break;
+	case F_PRIME_MOVEMENT:
+		fPrime = true;
+		break;
+	case D_MOVEMENT:
+		d = true;
+		break;
+	case D_PRIME_MOVEMENT:
+		dPrime = true;
+		break;
+	case U_MOVEMENT:
+		u = true;
+		break;
+	case U_PRIME_MOVEMENT:
+		uPrime = true;
+		break;
+	case B_MOVEMENT:
+		b = true;
+		break;
+	case B_PRIME_MOVEMENT:
+		bPrime = true;
+		break;
+	case R_MOVEMENT:
+		r = true;
+		break;
+	case R_PRIME_MOVEMENT:
+		rPrime = true;
+		break;
+	case L_MOVEMENT:
+		l = true;
+		break;
+	case L_PRIME_MOVEMENT:
+		lPrime = true;
+		break;
+	default:
+		break;
+	}
+}
+
+void HyperCube::solve()
+{
+	if (this->to_scramble.empty()) return;
+	this->to_solve = format_solution(get_solution(to_cube_not(string_to_vector(this->to_scramble))));
+	this->read_moves(this->to_solve);
+	this->enable();
+	solution_entered = true;
 }
 
 void HyperCube::stop_current_movement()
@@ -348,174 +541,20 @@ void HyperCube::stop_current_movement()
 	else enable();
 }
 
-void HyperCube::set_timer(const int& _timer)
-{
-	this->timer = _timer;
-}
+	/* END: auxiliar methods implementations */
 
-void HyperCube::solve_Rubiks()
-{
-	this->solving = true;
-	for (int i = 0; i < Rubiks.size(); i++)
-	{
-		Rubiks[i]->solved = false;
-		Rubiks[i]->solve();
-	}
-}
 
-void HyperCube::look_for_movement()
-{
-	if (!enable_movement) return;
-	
-	if (this->timer-- < 0)
-	{
-		stop_current_movement();
-		return;
-	}
-	if (!moves.empty() && start_new_movement)
-	{
-		char next_movement = this->moves.front();
-		this->moves.pop();
-		this->set_next_movement(next_movement);
-	}
-	if (f)				F();
-	else if (fPrime)	FPrime();
-	else if (b)			B();
-	else if (bPrime)	BPrime();
-
-	else if (u)			U();
-	else if (uPrime)	UPrime();
-
-	else if (d)			D();
-	else if (dPrime)	DPrime();
-
-	else if (l)			L();
-	else if (lPrime)	LPrime();
-
-	else if (r)			R();
-	else if (rPrime)	RPrime();
-	else if (expanding) expand();
-
-}
-
-void HyperCube::enable()
-{
-	enable_movement = start_new_movement = true;
-	this->timer = (int)((90.0f/chunk) - 2);
-}
-
-void HyperCube::expand()
-{
-	for (int i = 0; i < Rubiks.size(); i++)
-	{
-		Matrix4D transform(1.0f);
-		Vector3D dir = Rubiks[i]->get_center() - this->get_center();
-		dir.direction /= 100;
-		transform.translate(dir.direction);
-		Rubiks[i]->move(transform);
-	}
-}
-
-void HyperCube::retreat()
-{
-	bool all_solved = true;
-	for (int i = 0; i < Rubiks.size(); i++)
-	{
-		if (!Rubiks[i]->is_solved())
-		{
-			all_solved = false;
-			continue;
-		}
-		if (Rubiks[i]->stopped)
-		{
-			std::cout << "Rubiks[" << i << "] started retreating" << std::endl;
-			Matrix4D transform(1.0f);
-			Vector3D dir = this->get_center() - Rubiks[i]->get_center();
-			dir.direction /= 100;
-			transform.translate(dir.direction);
-			Rubiks[i]->to_retreat = transform;
-			Rubiks[i]->retreating = true;
-			Rubiks[i]->enable();
-			Rubiks[i]->set_timer(35);
-			Rubiks[i]->stopped = false;
-		}
-	}
-	if (all_solved)
-	{
-		solving = false;
-		this->solve();
-	}
-}
-
-void HyperCube::render()
-{
-	look_for_movement();
-	if (solving) retreat();
-	
-	for (int i = 0; i < Rubiks.size(); i++)
-	{
-		Rubiks[i]->render();
-	}
-
-	if (!totally_scrambled)
-	{
-		bool all_scrambled = true;
-
-		for (int i = 0; i < Rubiks.size(); i++)
-		{
-			if (!Rubiks[i]->scrambled)
-			{
-				all_scrambled = false;
-			}
-		}
-		if (all_scrambled)
-		{
-			std::cout << "All Scrambled!" << std::endl;
-			totally_scrambled = true;
-			this->solve_Rubiks();
-		}
-	}
-}
-
-void HyperCube::next()
-{
-	this->cur_cube_index++;
-	cur_cube_index %= Rubiks.size();
-	cur_cube = &Rubiks[cur_cube_index];
-}
+	/* BEGIN: getters implementations */
 
 Point HyperCube::get_center()
 {
 	return Rubiks[13]->get_center();
 }
 
-void HyperCube::rotate_litter(const std::vector<Rubik**>& cur_litter, const unsigned int& axis, const bool& clockwise)
-{
-	int direction = clockwise ? 1 : -1;
-	Point cur_center = (*cur_litter[4])->get_center();
-	Matrix4D transform(1.0f);
-	transform.translate(cur_center.x, cur_center.y, cur_center.z);
-	transform.rotate(chunk * direction, axis);
-	transform.translate(-cur_center.x, -cur_center.y, -cur_center.z);
+	/* END: getters implementations */
 
-	for (int i = 0; i < cur_litter.size(); i++)
-	{
-		(*cur_litter[i])->transform(transform);
-	}
-}
 
-void HyperCube::reassign_pointers(const std::vector<Rubik**>& cur_litter, const unsigned int* pattern)
-{
-	std::vector<Rubik*> new_litter;
-	for (int i = 0; i < cur_litter.size(); i++)
-	{
-		new_litter.push_back(*cur_litter[i]);
-	}
-	for (int i = 0; i < cur_litter.size(); i++)
-	{
-		*cur_litter[i] = new_litter[pattern[i]];
-	}
-}
+	/* BEGIN: Rubik movements methods implementations */
 
 void HyperCube::F()
 {
@@ -577,7 +616,8 @@ void HyperCube::RPrime()
 	rotate_litter(Right_Litter, X_AXIS, false);
 }
 
+	/* END: Rubik movements methods implementations */
 
-
+/* END: private HyperCube methods implementations */
 
 #endif // !__HYPER_CUBE_H__

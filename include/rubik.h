@@ -4,6 +4,7 @@
 #include <queue>
 #include <stdlib.h>
 #include <time.h>
+
 #include "./cube.h"
 #include "./solver/solve.h"
 #include "./solver/random.h"
@@ -20,25 +21,27 @@ public:
 
 	/* Auxiliar Methods */
 
-	void render();
-	void move(const Matrix4D&);
-	void enable();
-	void set_timer(const int&);
-	void set_speed(const float&);
-	void read_moves(const std::string&);
-	void disable();
 	void append(const char&);
 	void append(const std::string&);
-	bool in_movement();
-	bool is_solved();
-	void solve();
+	void disable();
+	void enable();
+	void move(const Matrix4D&);
+	void read_moves(const std::string&);
+	void render();
+	void rotation_reassign(const std::vector<Cube**>&, const unsigned int*);
 	void scramble();
+	void solve();
 	void transform(const Matrix4D&);
 
-	void rotation_reassign(const std::vector<Cube**>&, const unsigned int*);
+	/* Setters */
+
+	void set_speed(const float&);
+	void set_timer(const int&);
 
 	/* Getters */
 
+	bool in_movement();
+	bool is_solved();
 	Point get_center();
 	
 	/* Variables */
@@ -50,22 +53,20 @@ public:
 	bool f = false, fPrime = false, d = false, dPrime = false, u = false, uPrime = false, b = false, bPrime = false;
 	bool r = false, rPrime = false, l = false, lPrime = false, retreating = false, solved = true, stopped = true;
 	bool solution_entered = false, scrambling = false, scrambled = false;
-
 	Matrix4D to_retreat;
+
 private:
-	int timer, n_moves = 0;
-	bool enable_movement, start_new_movement;
-	float chunk;
-	
-	/* Movements Methods */
 
-	void set_next_movement(char);
+	/* Auxiliar Methods */
+
 	void look_for_movement();
-	void stop_current_movement();
-	void rotate_litter(const std::vector<Cube**>&, const unsigned int&, const bool&);
 	void reassign_pointers(const std::vector<Cube**>&, const unsigned int*);
+	void retreat();
+	void rotate_litter(const std::vector<Cube**>&, const unsigned int&, const bool&);
+	void set_next_movement(char);
+	void stop_current_movement();
 
-	/* Classic Movements */
+	/* Rubik Movements methods */
 
 	void F();
 	void D();
@@ -81,15 +82,22 @@ private:
 	void RPrime();
 	void LPrime();
 	
-	void retreat();
+	/* Variables */
 
+	int timer = 0, n_moves = 0;
+	bool enable_movement = false, start_new_movement = false;
+	float chunk;
 };
 
-Rubik::Rubik() : timer(0), enable_movement(false), start_new_movement(false), chunk(0.75f)
+/* BEGIN: public Rubik methods implementations */
+
+	/* BEGIN: auxiliar methods implementations */
+
+Rubik::Rubik() : chunk(0.75f)
 {
 }
 
-Rubik::Rubik(const Point& center, const float& separation) : timer(0), enable_movement(false), start_new_movement(false), chunk(0.75f)
+Rubik::Rubik(const Point& center, const float& separation) : chunk(0.75f)
 {
 	Point frontal_litter_center_1(center.x - separation,	center.y - separation,		center.z);						/* Bottom Litter 0 */		/* Left Litter 0  */	
 	Point frontal_litter_center_2(center.x,					center.y - separation,		center.z);						/* Bottom Litter 1 */														/* M Litter 1  */
@@ -155,135 +163,14 @@ Rubik::~Rubik()
 {
 }
 
-bool Rubik::is_solved()
-{
-	return this->solved;
-}
-
-void Rubik::rotation_reassign(const std::vector<Cube**>& cur_view, const unsigned int* pattern)
-{
-	std::vector<Cube*> new_cubes;
-
-	for (int i = 0; i < cur_view.size(); i++)
-	{
-		new_cubes.push_back(*cur_view[i]);
-	}
-
-	for (int i = 0; i < cur_view.size(); i++)
-	{
-		*cur_view[i] = new_cubes[pattern[i]];
-	}
-}
-
-void Rubik::solve()
-{
-	if (this->to_scramble.empty()) return;
-	this->to_solve = format_solution(get_solution(to_cube_not(string_to_vector(this->to_scramble))));
-	this->read_moves(this->to_solve);
-	this->enable();
-	solution_entered = true;
-}
-
-void Rubik::retreat()
-{
-	for (int i = 0; i < Cubes.size(); i++)
-	{
-		Cubes[i]->transform(to_retreat);
-	}
-}
-
-void Rubik::transform(const Matrix4D& transformation)
-{
-	for (size_t i = 0; i < Cubes.size(); i++)
-	{
-		Cubes[i]->transform(transformation);
-	}
-}
-
-void Rubik::scramble()
-{
-	int n_moves = rand() % 30 + 10;
-	for (int i = 0; i < n_moves; i++)
-	{
-		int movement_idx = rand() % 6;
-		this->to_scramble.push_back(valid_moves[movement_idx]);
-	}
-	std::cout << this->to_scramble << std::endl;
-	this->scrambling = true;
-	this->read_moves(this->to_scramble);
-	this->set_speed(6.0f);
-	this->enable();
-}
-
-void Rubik::read_moves(const std::string &to_read)
-{
-	for (int i = 0; i < to_read.size(); i++)
-	{
-		moves.push(to_read[i]);
-	}
-}
-
-void Rubik::append(const char &movement)
+void Rubik::append(const char& movement)
 {
 	this->to_scramble.push_back(movement);
-	std::cout << this->to_scramble << std::endl;
 }
 
-void Rubik::append(const std::string &movements)
+void Rubik::append(const std::string& movements)
 {
 	this->to_scramble.append(movements);
-}
-
-void Rubik::set_speed(const float& _chunk)
-{
-	chunk = _chunk;
-}
-
-void Rubik::set_next_movement(char cur_movement)
-{
-	timer = (int)((90.0f / chunk) - 2);
-	start_new_movement = solved = false;
-	switch(cur_movement)
-	{
-		case F_MOVEMENT:
-			f = true;
-			break;
-		case F_PRIME_MOVEMENT:
-			fPrime = true;
-			break;
-		case D_MOVEMENT:
-			d = true;
-			break;
-		case D_PRIME_MOVEMENT:
-			dPrime = true;
-			break;
-		case U_MOVEMENT:
-			u = true;
-			break;
-		case U_PRIME_MOVEMENT:
-			uPrime = true;
-			break;
-		case B_MOVEMENT:
-			b = true;
-			break;
-		case B_PRIME_MOVEMENT:
-			bPrime = true;
-			break;
-		case R_MOVEMENT:
-			r = true;
-			break;
-		case R_PRIME_MOVEMENT:
-			rPrime = true;
-			break;
-		case L_MOVEMENT:
-			l = true;
-			break;
-		case L_PRIME_MOVEMENT:
-			lPrime = true;
-			break;
-		default:
-			break;
-	}
 }
 
 void Rubik::disable()
@@ -303,15 +190,26 @@ void Rubik::disable()
 	}
 }
 
-void Rubik::set_timer(const int& _timer)
-{
-	this->timer = _timer;
-}
-
 void Rubik::enable()
 {
 	enable_movement = start_new_movement = true;
 	timer = (int)((90.0f / chunk) - 2);
+}
+
+void Rubik::move(const Matrix4D& transform)
+{
+	for (size_t i = 0; i < Cubes.size(); i++)
+	{
+		Cubes[i]->transform(transform);
+	}
+}
+
+void Rubik::read_moves(const std::string& to_read)
+{
+	for (int i = 0; i < to_read.size(); i++)
+	{
+		moves.push(to_read[i]);
+	}
 }
 
 void Rubik::render()
@@ -323,6 +221,133 @@ void Rubik::render()
 	{
 		Cubes[i]->render();
 	}
+}
+
+void Rubik::rotation_reassign(const std::vector<Cube**>& cur_view, const unsigned int* pattern)
+{
+	std::vector<Cube*> new_cubes;
+
+	for (int i = 0; i < cur_view.size(); i++)
+	{
+		new_cubes.push_back(*cur_view[i]);
+	}
+
+	for (int i = 0; i < cur_view.size(); i++)
+	{
+		*cur_view[i] = new_cubes[pattern[i]];
+	}
+}
+
+void Rubik::scramble()
+{
+	int n_moves = rand() % 30 + 10;
+	for (int i = 0; i < n_moves; i++)
+	{
+		int movement_idx = rand() % 6;
+		this->to_scramble.push_back(valid_moves[movement_idx]);
+	}
+	std::cout << this->to_scramble << std::endl;
+	this->scrambling = true;
+	this->read_moves(this->to_scramble);
+	this->set_speed(6.0f);
+	this->enable();
+}
+
+void Rubik::solve()
+{
+	if (this->to_scramble.empty()) return;
+	this->to_solve = format_solution(get_solution(to_cube_not(string_to_vector(this->to_scramble))));
+	this->read_moves(this->to_solve);
+	this->enable();
+	solution_entered = true;
+}
+
+void Rubik::transform(const Matrix4D& transformation)
+{
+	for (size_t i = 0; i < Cubes.size(); i++)
+	{
+		Cubes[i]->transform(transformation);
+	}
+}
+
+	/* END: auxiliar methods implementations */
+
+
+	/* BEGIN: Rubik Setters implementations */
+
+void Rubik::set_speed(const float& _chunk)
+{
+	chunk = _chunk;
+}
+
+void Rubik::set_timer(const int& _timer)
+{
+	this->timer = _timer;
+}
+
+	/* END: Rubik Setters implementations */
+
+
+	/* BEGIN: Rubik Getters implementations */
+
+bool Rubik::in_movement()
+{
+	return enable_movement;
+}
+
+bool Rubik::is_solved()
+{
+	return this->solved;
+}
+
+Point Rubik::get_center()
+{
+	return Cubes[13]->get_center();
+}
+
+	/* END: Rubik Getters implementations */
+
+/* END: public Rubik methods implementations */
+
+
+
+/* BEGIN: Private Rubik methods implementations */
+
+	/* BEGIN: auxiliar methods implementations */
+
+void Rubik::look_for_movement()
+{
+	if (!enable_movement) return;
+
+	if (this->timer-- < 0) {
+		stop_current_movement();
+		return;
+	}
+
+	if (!moves.empty() && start_new_movement)
+	{
+		char next_movement = this->moves.front();
+		this->moves.pop();
+		this->set_next_movement(next_movement);
+	}
+	if (f)				F();
+	else if (fPrime)	FPrime();
+	else if (b)			B();
+	else if (bPrime)	BPrime();
+
+	else if (u)			U();
+	else if (uPrime)	UPrime();
+
+	else if (d)			D();
+	else if (dPrime)	DPrime();
+
+	else if (l)			L();
+	else if (lPrime)	LPrime();
+
+	else if (r)			R();
+	else if (rPrime)	RPrime();
+
+	else if (retreating) retreat();
 }
 
 void Rubik::reassign_pointers(const std::vector<Cube**>& cur_litter, const unsigned int* pattern)
@@ -340,9 +365,74 @@ void Rubik::reassign_pointers(const std::vector<Cube**>& cur_litter, const unsig
 	}
 }
 
-Point Rubik::get_center()
+void Rubik::retreat()
 {
-	return Cubes[13]->get_center();
+	for (int i = 0; i < Cubes.size(); i++)
+	{
+		Cubes[i]->transform(to_retreat);
+	}
+}
+
+void Rubik::rotate_litter(const std::vector<Cube**>& cur_litter, const unsigned int& axis, const bool& clockwise)
+{
+	int direction = clockwise ? 1 : -1;
+	Point cur_center = (*cur_litter[4])->get_center();
+	Matrix4D transform(1.0f);
+	transform.translate(cur_center.x, cur_center.y, cur_center.z);
+	transform.rotate(chunk * direction, axis);
+	transform.translate(-cur_center.x, -cur_center.y, -cur_center.z);
+
+	for (int i = 0; i < cur_litter.size(); i++)
+	{
+		(*cur_litter[i])->transform(transform);
+	}
+}
+
+void Rubik::set_next_movement(char cur_movement)
+{
+	timer = (int)((90.0f / chunk) - 2);
+	start_new_movement = solved = false;
+	switch (cur_movement)
+	{
+	case F_MOVEMENT:
+		f = true;
+		break;
+	case F_PRIME_MOVEMENT:
+		fPrime = true;
+		break;
+	case D_MOVEMENT:
+		d = true;
+		break;
+	case D_PRIME_MOVEMENT:
+		dPrime = true;
+		break;
+	case U_MOVEMENT:
+		u = true;
+		break;
+	case U_PRIME_MOVEMENT:
+		uPrime = true;
+		break;
+	case B_MOVEMENT:
+		b = true;
+		break;
+	case B_PRIME_MOVEMENT:
+		bPrime = true;
+		break;
+	case R_MOVEMENT:
+		r = true;
+		break;
+	case R_PRIME_MOVEMENT:
+		rPrime = true;
+		break;
+	case L_MOVEMENT:
+		l = true;
+		break;
+	case L_PRIME_MOVEMENT:
+		lPrime = true;
+		break;
+	default:
+		break;
+	}
 }
 
 void Rubik::stop_current_movement()
@@ -394,73 +484,15 @@ void Rubik::stop_current_movement()
 	{
 		reassign_pointers(Left_Litter, prime_pattern);
 	}
-	f =  fPrime = d = dPrime = u = uPrime = b = bPrime = r = rPrime = l = lPrime = false;
+	f = fPrime = d = dPrime = u = uPrime = b = bPrime = r = rPrime = l = lPrime = false;
 	if (moves.empty()) disable();
 	else enable();
 }
 
-void Rubik::rotate_litter(const std::vector<Cube**>& cur_litter, const unsigned int &axis, const bool &clockwise)
-{
-	int direction = clockwise ? 1 : -1;
-	Point cur_center = (*cur_litter[4])->get_center();
-	Matrix4D transform(1.0f);
-	transform.translate(cur_center.x, cur_center.y, cur_center.z);
-	transform.rotate(chunk * direction, axis);
-	transform.translate(-cur_center.x, -cur_center.y, -cur_center.z);
+	/* END: auxiliar methods implementations */
 
-	for (int i = 0; i < cur_litter.size(); i++)
-	{
-		(*cur_litter[i])->transform(transform);
-	}
-}
 
-bool Rubik::in_movement()
-{
-	return enable_movement;
-}
-
-void Rubik::move(const Matrix4D& transform)
-{
-	for (size_t i = 0; i < Cubes.size(); i++)
-	{
-		Cubes[i]->transform(transform);
-	}
-}
-
-void Rubik::look_for_movement()
-{
-	if (!enable_movement) return;
-
-	if (this->timer-- < 0) {
-		stop_current_movement();
-		return;
-	}
-
-	if (!moves.empty() && start_new_movement)
-	{
-		char next_movement = this->moves.front();
-		this->moves.pop();
-		this->set_next_movement(next_movement);
-	}
-	if (f)				F();
-	else if (fPrime)	FPrime();
-	else if (b)			B();
-	else if (bPrime)	BPrime();
-
-	else if (u)			U();
-	else if (uPrime)	UPrime();
-
-	else if (d)			D();
-	else if (dPrime)	DPrime();
-
-	else if (l)			L();
-	else if (lPrime)	LPrime();
-
-	else if (r)			R();
-	else if (rPrime)	RPrime();
-
-	else if (retreating) retreat();
-}
+	/* BEGIN: Rubik movements methods implementations */
 
 void Rubik::F()
 {
@@ -521,5 +553,9 @@ void Rubik::RPrime()
 {
 	rotate_litter(Right_Litter, X_AXIS, false);
 }
+
+	/* END: Rubik movements methods implementations */
+
+/* END: Private Rubik methods implementations */
 
 #endif //!__RUBIK_H__
