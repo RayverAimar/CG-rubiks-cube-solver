@@ -28,6 +28,9 @@
 #define B_MOVEMENT							'B'
 #define R_MOVEMENT							'R'
 #define L_MOVEMENT							'L'
+#define M_MOVEMENT							'M'
+#define E_MOVEMENT							'E'
+#define S_MOVEMENT							'S'
 
 #define F_PRIME_MOVEMENT					'f'
 #define D_PRIME_MOVEMENT					'd'
@@ -47,5 +50,12 @@ const unsigned int up_litter_idx[]		= { 6, 7, 8, 15, 16, 17, 24, 25, 26 };
 const unsigned int down_litter_idx[]	= { 18, 19, 20, 9, 10, 11, 0, 1, 2 };
 const unsigned int left_litter_idx[]	= { 2, 11, 20, 5, 14, 23, 8, 17, 26 };
 const unsigned int right_litter_idx[]	= { 0, 3, 6, 9, 12, 15, 18, 21, 24 };
+
+const unsigned int clockwise_rotation_idx[] = { 18, 19, 20, 9, 10, 11, 0, 1, 2, 21, 22, 23, 12, 13, 14, 3, 4, 5, 24, 25, 26, 15, 16, 17, 6, 7, 8 };
+const unsigned int non_clockwise_rotation_idx[] = { 6, 7, 8, 15, 16, 17, 24, 25, 26, 3, 4, 5, 12, 13, 14, 21, 22, 23, 0, 1, 2, 9, 10, 11, 18, 19, 20 };
+const unsigned int x_view_idx[] = { 18, 9, 0, 21, 12, 3, 24, 15, 6, 19, 10, 1, 22, 13, 4, 25, 16, 7, 20, 11, 2, 23, 14, 5, 26, 17 ,8 };
+const unsigned int y_view_idx[] = { 6, 3, 0, 7, 4, 1, 8, 5, 2, 15, 12, 9, 16, 13, 10, 17, 14, 11, 24, 21, 18, 25, 22, 19, 26, 23, 20 };
+const unsigned int z_view_idx[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26 };
+
 
 #endif // __UTILS_H__
