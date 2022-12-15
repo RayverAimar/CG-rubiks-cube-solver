@@ -121,6 +121,7 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 		camera->ProcessKeyboard(LEFT, deltaTime);
 	if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
 		camera->ProcessKeyboard(RIGHT, deltaTime);
+
 }
 
 void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
@@ -141,7 +142,13 @@ void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
 	lastX = xpos;
 	lastY = ypos;
 
-	camera->ProcessMouseMovement(xoffset, yoffset);
+	if (process_Camera)
+	{
+		camera->ProcessMouseMovement(xoffset, yoffset);
+		//cout << "x: " << xoffset << " y: " << yoffset << '\n';
+	}
+	//else
+		//camera->ProcessMouseMovement(xoffset, yoffset);
 }
 
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)

@@ -319,7 +319,10 @@ void HyperCube::expand()
 
 void HyperCube::look_for_movement()
 {
-	if (!enable_movement) return;
+	if (!enable_movement)
+	{
+		return;
+	}
 
 	if (this->timer-- < 0)
 	{
@@ -407,6 +410,7 @@ void HyperCube::rotate_litter(const std::vector<Rubik**>& cur_litter, const unsi
 	for (int i = 0; i < cur_litter.size(); i++)
 	{
 		(*cur_litter[i])->transform(transform);
+		(*cur_litter[i])->set_Colors();
 	}
 }
 

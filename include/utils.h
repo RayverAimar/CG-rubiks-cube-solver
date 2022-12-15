@@ -34,12 +34,13 @@
 #define R_PRIME_MOVEMENT					'r'
 #define L_PRIME_MOVEMENT					'l'
 
-#define BLUE_COLOR							glm::vec4(0.1882f, 0.6588f, 0.9568f, 1.0f)
-#define RED_COLOR							glm::vec4(0.9960f, 0.3529f, 0.3490f, 1.0f)
-#define YELLOW_COLOR						glm::vec4(1.0000f, 0.9921f, 0.3254f, 1.0f)
-#define ORANGE_COLOR						glm::vec4(1.0000f, 0.4862f, 0.2745f, 1.0f)
-#define GREEN_COLOR							glm::vec4(0.5372f, 0.9490f, 0.4431f, 1.0f)
-#define WHITE_COLOR							glm::vec4(0.9411f, 0.9254f, 0.9529f, 1.0f)
+#define BLUE_COLOR							glm::vec4(0.2156f, 0.3215f, 0.5725f, 1.0f)
+#define RED_COLOR							glm::vec4(0.6509f, 0.2705f, 0.1843f, 1.0f)
+#define YELLOW_COLOR						glm::vec4(0.6941f, 0.6823f, 0.2470f, 1.0f) // 249 224 118   glm::vec4(1.0000f, 0.9921f, 0.3254f, 1.0f)
+#define LIGH_YELLOW_COLOR					glm::vec4(0.6941f, 0.6549f, 0.1568f, 1.0f)
+#define ORANGE_COLOR						glm::vec4(0.6862f, 0.4156f, 0.1607f, 1.0f)
+#define GREEN_COLOR							glm::vec4(0.2705f, 0.5098f, 0.1372f, 1.0f)
+#define WHITE_COLOR							glm::vec4(0.7176f, 0.7137f, 0.7294f, 1.0f) // 224 221 229
 #define BLACK_COLOR							glm::vec4(0.1215f, 0.1254f, 0.1254f, 1.0f)
 
 /* Camera */
@@ -53,6 +54,9 @@ static bool firstMouse = true;
 // Camera timing
 static float deltaTime = 0.0f;
 static float lastFrame = 0.0f;
+
+// Enable Camera
+static bool process_Camera = true;
 
 const char valid_moves[] = { F_MOVEMENT, D_MOVEMENT, U_MOVEMENT, B_MOVEMENT, R_MOVEMENT, L_MOVEMENT,
 							 F_PRIME_MOVEMENT, D_PRIME_MOVEMENT, U_PRIME_MOVEMENT, B_PRIME_MOVEMENT, R_PRIME_MOVEMENT, L_PRIME_MOVEMENT };

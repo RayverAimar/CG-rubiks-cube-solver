@@ -17,14 +17,18 @@ public:
 	/* Auxiliar Methods */
 
 	void setUp();
-	void render();
+	void render(bool light = false);
 	void transform(const Matrix4D&);
+
+	void apply_color();
+	void insert_colors();
 
 	/* Getters */
 
 	Point get_center();
 
 	std::vector<Square*> squares;
+	std::vector<glm::vec4> face_colors;
 	
 private:
 	Shader cube_colors;
@@ -80,34 +84,58 @@ void Cube::setUp()
 	}
 }
 
-void Cube::render()
+void Cube::render(bool light)
 {
 	cube_colors.use();
 	cube_colors.classical_movement();
 
-	cube_colors.setVec4Color("ourColor", GREEN_COLOR);
-
+	cube_colors.setVec4Color("ourColor", face_colors[0]);
 	this->squares[0]->render();
-	
-	cube_colors.setVec4Color("ourColor", BLUE_COLOR);
-	
+
+	cube_colors.setVec4Color("ourColor", face_colors[1]);
+	this->squares[1]->render();
+
+	cube_colors.setVec4Color("ourColor", face_colors[2]);
+	this->squares[2]->render();
+
+	cube_colors.setVec4Color("ourColor", face_colors[3]);
+	this->squares[3]->render();
+
+	cube_colors.setVec4Color("ourColor", face_colors[4]);
+	this->squares[4]->render();
+		
+	cube_colors.setVec4Color("ourColor", face_colors[5]);
 	this->squares[5]->render();
 
-	cube_colors.setVec4Color("ourColor", YELLOW_COLOR);
+}
 
+void Cube::apply_color()
+{
+	cube_colors.use();
+	cube_colors.classical_movement();
+
+	cube_colors.setVec4Color("ourColor", glm::vec4(2.0f, 2.0f, 2.0f, 1.0f) * face_colors[0]);
+	this->squares[0]->render();
+
+	cube_colors.setVec4Color("ourColor", glm::vec4(2.0f, 2.0f, 2.0f, 1.0f) * face_colors[1]);
 	this->squares[1]->render();
-	
-	cube_colors.setVec4Color("ourColor", BLACK_COLOR);
 
+	cube_colors.setVec4Color("ourColor", glm::vec4(2.0f, 2.0f, 2.0f, 1.0f) * face_colors[2]);
+	this->squares[2]->render();
+
+	cube_colors.setVec4Color("ourColor", glm::vec4(2.0f, 2.0f, 2.0f, 1.0f) * face_colors[3]);
+	this->squares[3]->render();
+
+	cube_colors.setVec4Color("ourColor", glm::vec4(2.0f, 2.0f, 2.0f, 1.0f) * face_colors[4]);
 	this->squares[4]->render();
 
-	cube_colors.setVec4Color("ourColor", RED_COLOR);
+	cube_colors.setVec4Color("ourColor", glm::vec4(2.0f, 2.0f, 2.0f, 1.0f) * face_colors[5]);
+	this->squares[5]->render();
+}
 
-	this->squares[2]->render();
-	
-	cube_colors.setVec4Color("ourColor", WHITE_COLOR);
+void Cube::insert_colors()
+{
 
-	this->squares[3]->render();
 }
 
 void Cube::transform(const Matrix4D& transformation)

@@ -37,6 +37,7 @@ public:
 
 	void set_speed(const float&);
 	void set_timer(const int&);
+	void set_Colors();
 
 	/* Getters */
 
@@ -59,7 +60,7 @@ private:
 
 	/* Auxiliar Methods */
 
-	void look_for_movement();
+	bool look_for_movement();
 	void reassign_pointers(const std::vector<Cube**>&, const unsigned int*);
 	void retreat();
 	void rotate_litter(const std::vector<Cube**>&, const unsigned int&, const bool&);
@@ -99,6 +100,8 @@ Rubik::Rubik() : chunk(0.75f)
 
 Rubik::Rubik(const Point& center, const float& separation) : chunk(0.75f)
 {
+	std::vector<std::vector< glm::vec4> > rubik_color; 
+
 	Point frontal_litter_center_1(center.x - separation,	center.y - separation,		center.z);						/* Bottom Litter 0 */		/* Left Litter 0  */	
 	Point frontal_litter_center_2(center.x,					center.y - separation,		center.z);						/* Bottom Litter 1 */														/* M Litter 1  */
 	Point frontal_litter_center_3(center.x + separation,	center.y - separation,		center.z);						/* Bottom Litter 2 */								/* Right Litter 02 */	
@@ -108,6 +111,16 @@ Rubik::Rubik(const Point& center, const float& separation) : chunk(0.75f)
 	Point frontal_litter_center_7(center.x - separation,	center.y + separation,		center.z);						/* Upper Litter 6 */		/* Left Litter 6  */								
 	Point frontal_litter_center_8(center.x,					center.y + separation,		center.z);						/* Upper Litter 7 */														/* M Litter 7  */
 	Point frontal_litter_center_9(center.x + separation,	center.y + separation,		center.z);						/* Upper Litter 8 */								/* Right Litter 08 */
+
+	rubik_color.push_back({ ORANGE_COLOR,BLACK_COLOR, BLACK_COLOR, WHITE_COLOR, GREEN_COLOR, BLACK_COLOR });
+	rubik_color.push_back({ ORANGE_COLOR,BLACK_COLOR, BLACK_COLOR, BLACK_COLOR, GREEN_COLOR, BLACK_COLOR });
+	rubik_color.push_back({ ORANGE_COLOR,BLACK_COLOR, YELLOW_COLOR, BLACK_COLOR, GREEN_COLOR, BLACK_COLOR });//
+	rubik_color.push_back({ ORANGE_COLOR,BLACK_COLOR, BLACK_COLOR, WHITE_COLOR, BLACK_COLOR, BLACK_COLOR });
+	rubik_color.push_back({ ORANGE_COLOR,BLACK_COLOR, BLACK_COLOR, BLACK_COLOR, BLACK_COLOR, BLACK_COLOR });
+	rubik_color.push_back({ ORANGE_COLOR,BLACK_COLOR, YELLOW_COLOR, BLACK_COLOR, BLACK_COLOR, BLACK_COLOR });//
+	rubik_color.push_back({ ORANGE_COLOR,BLUE_COLOR, BLACK_COLOR, WHITE_COLOR, BLACK_COLOR, BLACK_COLOR });
+	rubik_color.push_back({ ORANGE_COLOR,BLUE_COLOR, BLACK_COLOR, BLACK_COLOR, BLACK_COLOR, BLACK_COLOR });
+	rubik_color.push_back({ ORANGE_COLOR,BLUE_COLOR, YELLOW_COLOR, BLACK_COLOR, BLACK_COLOR, BLACK_COLOR });//
 
 	Point middle_litter_center_1(center.x - separation,		center.y - separation,		center.z + separation);			/* Bottom Litter 9 */		/* Left Litter 9  */
 	Point middle_litter_center_2(center.x,					center.y - separation,		center.z + separation);			/* Bottom Litter 10 */														/* M Litter 10 */
@@ -119,6 +132,16 @@ Rubik::Rubik(const Point& center, const float& separation) : chunk(0.75f)
 	Point middle_litter_center_8(center.x,					center.y + separation,		center.z + separation);			/* Upper Litter 16 */														/* M Litter 16 */
 	Point middle_litter_center_9(center.x + separation,		center.y + separation,		center.z + separation);			/* Upper Litter 17 */								/* Right Litter 17 */
 
+	rubik_color.push_back({ BLACK_COLOR,BLACK_COLOR, BLACK_COLOR, WHITE_COLOR, GREEN_COLOR, BLACK_COLOR });
+	rubik_color.push_back({ BLACK_COLOR,BLACK_COLOR, BLACK_COLOR, BLACK_COLOR, GREEN_COLOR, BLACK_COLOR });
+	rubik_color.push_back({ BLACK_COLOR,BLACK_COLOR, YELLOW_COLOR, BLACK_COLOR, GREEN_COLOR, BLACK_COLOR });//
+	rubik_color.push_back({ BLACK_COLOR,BLACK_COLOR, BLACK_COLOR, WHITE_COLOR, BLACK_COLOR, BLACK_COLOR });
+	rubik_color.push_back({ BLACK_COLOR,BLACK_COLOR, BLACK_COLOR, BLACK_COLOR, BLACK_COLOR, BLACK_COLOR });
+	rubik_color.push_back({ BLACK_COLOR,BLACK_COLOR, YELLOW_COLOR, BLACK_COLOR, BLACK_COLOR, BLACK_COLOR });//
+	rubik_color.push_back({ BLACK_COLOR,BLUE_COLOR, BLACK_COLOR, WHITE_COLOR, BLACK_COLOR, BLACK_COLOR });
+	rubik_color.push_back({ BLACK_COLOR,BLUE_COLOR, BLACK_COLOR, BLACK_COLOR, BLACK_COLOR, BLACK_COLOR });
+	rubik_color.push_back({ BLACK_COLOR,BLUE_COLOR, YELLOW_COLOR, BLACK_COLOR, BLACK_COLOR, BLACK_COLOR });//
+
 	Point back_litter_center_1	(center.x - separation,		center.y - separation,		center.z + (separation * 2));	/* Bottom Litter 18 */		/* Left Litter 18 */
 	Point back_litter_center_2	(center.x,					center.y - separation,		center.z + (separation * 2));	/* Bottom Litter 19 */														/* M Litter 19 */
 	Point back_litter_center_3	(center.x + separation,		center.y - separation,		center.z + (separation * 2));	/* Bottom Litter 20 */								/* Right Litter 20 */
@@ -129,6 +152,17 @@ Rubik::Rubik(const Point& center, const float& separation) : chunk(0.75f)
 	Point back_litter_center_8	(center.x,					center.y + separation,		center.z + (separation * 2));	/* Upper Litter 25 */														/* M Litter 25 */
 	Point back_litter_center_9	(center.x + separation,		center.y + separation,		center.z + (separation * 2));	/* Upper Litter 26 */								/* Right Litter 26 */
 
+	rubik_color.push_back({ BLACK_COLOR,BLACK_COLOR, BLACK_COLOR, WHITE_COLOR, GREEN_COLOR, RED_COLOR });
+	rubik_color.push_back({ BLACK_COLOR,BLACK_COLOR, BLACK_COLOR, BLACK_COLOR, GREEN_COLOR, RED_COLOR });
+	rubik_color.push_back({ BLACK_COLOR,BLACK_COLOR, YELLOW_COLOR, BLACK_COLOR, GREEN_COLOR, RED_COLOR });//
+	rubik_color.push_back({ BLACK_COLOR,BLACK_COLOR, BLACK_COLOR, WHITE_COLOR, BLACK_COLOR, RED_COLOR });
+	rubik_color.push_back({ BLACK_COLOR,BLACK_COLOR, BLACK_COLOR, BLACK_COLOR, BLACK_COLOR, RED_COLOR });
+	rubik_color.push_back({ BLACK_COLOR,BLACK_COLOR, YELLOW_COLOR, BLACK_COLOR, BLACK_COLOR, RED_COLOR });//
+	rubik_color.push_back({ BLACK_COLOR,BLUE_COLOR, BLACK_COLOR, WHITE_COLOR, BLACK_COLOR, RED_COLOR });
+	rubik_color.push_back({ BLACK_COLOR,BLUE_COLOR, BLACK_COLOR, BLACK_COLOR, BLACK_COLOR, RED_COLOR });
+	rubik_color.push_back({ BLACK_COLOR,BLUE_COLOR, YELLOW_COLOR, BLACK_COLOR, BLACK_COLOR, RED_COLOR });//
+
+
 	std::vector<Point> centers = { frontal_litter_center_1, frontal_litter_center_2, frontal_litter_center_3, frontal_litter_center_4, frontal_litter_center_5, frontal_litter_center_6, frontal_litter_center_7, frontal_litter_center_8, frontal_litter_center_9,
 									middle_litter_center_1, middle_litter_center_2, middle_litter_center_3, middle_litter_center_4, middle_litter_center_5, middle_litter_center_6, middle_litter_center_7, middle_litter_center_8, middle_litter_center_9,
 									back_litter_center_1, back_litter_center_2, back_litter_center_3, back_litter_center_4, back_litter_center_5, back_litter_center_6, back_litter_center_7, back_litter_center_8, back_litter_center_9
@@ -137,6 +171,7 @@ Rubik::Rubik(const Point& center, const float& separation) : chunk(0.75f)
 	for (int i = 0; i < centers.size(); i++)
 	{
 		Cube* temporal_cube = new Cube(centers[i], (separation / 2) - (separation / 20));
+		temporal_cube->face_colors.insert(temporal_cube->face_colors.end(), rubik_color[i].begin(), rubik_color[i].end());
 		Cubes.push_back(temporal_cube);
 	}
 
@@ -214,12 +249,11 @@ void Rubik::read_moves(const std::string& to_read)
 
 void Rubik::render()
 {
-
-	look_for_movement();
-
+	bool to_light = look_for_movement();
+	
 	for (size_t i = 0; i < Cubes.size(); i++)
 	{
-		Cubes[i]->render();
+		Cubes[i]->render(to_light);
 	}
 }
 
@@ -249,7 +283,7 @@ void Rubik::scramble()
 	std::cout << this->to_scramble << std::endl;
 	this->scrambling = true;
 	this->read_moves(this->to_scramble);
-	this->set_speed(6.0f);
+	this->set_speed(4.5f);
 	this->enable();
 }
 
@@ -315,13 +349,13 @@ Point Rubik::get_center()
 
 	/* BEGIN: auxiliar methods implementations */
 
-void Rubik::look_for_movement()
+bool Rubik::look_for_movement()
 {
-	if (!enable_movement) return;
+	if (!enable_movement) return false;
 
 	if (this->timer-- < 0) {
 		stop_current_movement();
-		return;
+		return false;
 	}
 
 	if (!moves.empty() && start_new_movement)
@@ -348,6 +382,7 @@ void Rubik::look_for_movement()
 	else if (rPrime)	RPrime();
 
 	else if (retreating) retreat();
+	return true;
 }
 
 void Rubik::reassign_pointers(const std::vector<Cube**>& cur_litter, const unsigned int* pattern)
@@ -385,6 +420,8 @@ void Rubik::rotate_litter(const std::vector<Cube**>& cur_litter, const unsigned 
 	for (int i = 0; i < cur_litter.size(); i++)
 	{
 		(*cur_litter[i])->transform(transform);
+		//
+		(*cur_litter[i])->apply_color();
 	}
 }
 
@@ -487,6 +524,14 @@ void Rubik::stop_current_movement()
 	f = fPrime = d = dPrime = u = uPrime = b = bPrime = r = rPrime = l = lPrime = false;
 	if (moves.empty()) disable();
 	else enable();
+}
+
+void Rubik::set_Colors()
+{
+	for (size_t i = 0; i < Cubes.size(); i++)
+	{
+		Cubes[i]->apply_color();
+	}
 }
 
 	/* END: auxiliar methods implementations */
