@@ -119,6 +119,11 @@ bool OpenGlLoader::isOpen()
 
 void OpenGlLoader::clearBuffers()
 {
+	// Re-asserted every frame: ImGui changes glViewport during its draw, and
+	// on macOS Retina the framebuffer can resize after our init pass.
+	int fbW, fbH;
+	glfwGetFramebufferSize(this->window, &fbW, &fbH);
+	glViewport(0, 0, fbW, fbH);
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
