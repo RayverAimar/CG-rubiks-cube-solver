@@ -33,6 +33,9 @@ public:
 	void solve();
 	void transform(const Matrix4D&);
 
+	void play_move(char move);
+	bool is_busy() const;
+
 	/* Setters */
 
 	void set_speed(const float&);
@@ -54,6 +57,7 @@ public:
 	bool f = false, fPrime = false, d = false, dPrime = false, u = false, uPrime = false, b = false, bPrime = false;
 	bool r = false, rPrime = false, l = false, lPrime = false, retreating = false, solved = true, stopped = true;
 	bool solution_entered = false, scrambling = false, scrambled = false;
+	char current_move = 0;
 	Matrix4D to_retreat;
 
 private:
@@ -296,6 +300,20 @@ void Rubik::solve()
 	solution_entered = true;
 }
 
+void Rubik::play_move(char move)
+{
+	this->to_scramble.push_back(move);
+	std::string single(1, move);
+	this->read_moves(single);
+	this->set_speed(4.5f);
+	this->enable();
+}
+
+bool Rubik::is_busy() const
+{
+	return enable_movement || !moves.empty() || scrambling || solution_entered;
+}
+
 void Rubik::transform(const Matrix4D& transformation)
 {
 	for (size_t i = 0; i < Cubes.size(); i++)
@@ -429,6 +447,7 @@ void Rubik::set_next_movement(char cur_movement)
 {
 	timer = (int)((90.0f / chunk) - 2);
 	start_new_movement = solved = false;
+	current_move = cur_movement;
 	switch (cur_movement)
 	{
 	case F_MOVEMENT:
@@ -522,6 +541,7 @@ void Rubik::stop_current_movement()
 		reassign_pointers(Left_Litter, prime_pattern);
 	}
 	f = fPrime = d = dPrime = u = uPrime = b = bPrime = r = rPrime = l = lPrime = false;
+	current_move = 0;
 	if (moves.empty()) disable();
 	else enable();
 }

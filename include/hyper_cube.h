@@ -22,6 +22,9 @@ public:
 	void scramble();
 	void solve_Rubiks();
 
+	void play_move(char move);
+	bool is_busy() const;
+
 	/* Setters */
 
 	void set_expanding();
@@ -38,6 +41,8 @@ public:
 	std::string to_scramble, to_solve;
 	bool f = false, fPrime = false, d = false, dPrime = false, u = false, uPrime = false, b = false, bPrime = false;
 	bool r = false, rPrime = false, l = false, lPrime = false, solving = false;
+	bool scrambling = false;
+	char current_move = 0;
 
 private:
 	int timer = 0;
@@ -80,7 +85,7 @@ private:
 
 	int cur_cube_index;
 	bool enable_movement = false, expanding = false, retreating = false, totally_scrambled = true;
-	bool scrambling = false, scrambled = false, solved = true, solution_entered = false;
+	bool scrambled = false, solved = true, solution_entered = false;
 };
 
 /* BEGIN: public HyperCube methods implementations */
@@ -237,6 +242,10 @@ void HyperCube::scramble()
 	this->read_moves(this->to_scramble);
 	this->set_speed(3.0f);
 	this->enable();
+
+	// Also scramble each inner Rubik so the whole cluster *and* every
+	// individual cube end up in a random state.
+	for (Rubik* r : Rubiks) r->scramble();
 }
 
 void HyperCube::solve_Rubiks()
@@ -247,6 +256,24 @@ void HyperCube::solve_Rubiks()
 		Rubiks[i]->solved = false;
 		Rubiks[i]->solve();
 	}
+}
+
+void HyperCube::play_move(char move)
+{
+	this->to_scramble.push_back(move);
+	std::string single(1, move);
+	this->read_moves(single);
+	this->set_speed(4.5f);
+	this->enable();
+}
+
+bool HyperCube::is_busy() const
+{
+	if (enable_movement || !moves.empty()) return true;
+	if (scrambling || solving || expanding || retreating) return true;
+	for (auto* r : Rubiks)
+		if (r->is_busy()) return true;
+	return false;
 }
 
 	/* END: auxiliar methods implementations */
@@ -418,6 +445,7 @@ void HyperCube::set_next_movement(char cur_movement)
 {
 	timer = (int)((90.0f / chunk) - 2);
 	start_new_movement = false;
+	current_move = cur_movement;
 	switch (cur_movement)
 	{
 	case F_MOVEMENT:
@@ -541,6 +569,7 @@ void HyperCube::stop_current_movement()
 		totally_scrambled = false;
 	}
 	f = fPrime = d = dPrime = u = uPrime = b = bPrime = r = rPrime = l = lPrime = false;
+	current_move = 0;
 	if (moves.empty()) disable();
 	else enable();
 }

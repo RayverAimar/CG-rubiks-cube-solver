@@ -2,8 +2,8 @@
 #define __UTILS_H__
 
 #define SCR_TITLE							"Rayver - OpenGL Project"
-#define SCR_WIDTH							800
-#define SCR_HEIGHT							600
+#define SCR_WIDTH							1280
+#define SCR_HEIGHT							800
 
 #define X_AXIS								0
 #define Y_AXIS								1

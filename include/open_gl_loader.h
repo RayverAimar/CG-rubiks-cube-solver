@@ -76,7 +76,9 @@ void OpenGlLoader::glfwCallbacksSetter()
 	glfwSetCursorPosCallback(this->window, mouse_callback);
 	glfwSetScrollCallback(this->window, scroll_callback);
 
-	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	// Start with the cursor visible — main.cpp will lock it for FPS camera
+	// when entering a play mode, and re-enable it when returning to the menu.
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 }
 
 void OpenGlLoader::glfwContextInit()
@@ -93,6 +95,7 @@ void OpenGlLoader::glfwGladLoader()
 		std::cout << "Failed to initialize GLAD" << std::endl;
 		exit(-1);
 	}
+
 }
 
 void OpenGlLoader::glfwWindowInit()
