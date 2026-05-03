@@ -24,6 +24,7 @@ public:
 
 	void play_move(char move);
 	bool is_busy() const;
+	bool is_solving() const;
 
 	/* Setters */
 
@@ -191,6 +192,10 @@ void HyperCube::disable()
 		this->solved = true;
 		this->solution_entered = false;
 		this->scrambled = false;
+		// Reset the scramble log; otherwise the next scramble appends to it
+		// and Kociemba would solve the cumulative path instead of the new one.
+		this->to_scramble.clear();
+		this->to_solve.clear();
 	}
 }
 
@@ -281,6 +286,11 @@ void HyperCube::scramble()
 
 void HyperCube::solve_Rubiks()
 {
+	// Snapshot the post-scramble cluster positions: retreat() must bring each
+	// sub-cube back to where the litter pointers expect it, otherwise the
+	// outer-solve rotate_litter() rotates the wrong slots.
+	for (size_t i = 0; i < Rubiks.size(); i++)
+		home_centers[i] = Rubiks[i]->get_center();
 	std::fill(retreated.begin(), retreated.end(), false);
 	this->solving = true;
 	this->expanding_for_solve = true;
@@ -294,6 +304,11 @@ void HyperCube::play_move(char move)
 	this->read_moves(single);
 	this->set_speed(4.5f);
 	this->enable();
+}
+
+bool HyperCube::is_solving() const
+{
+	return solving || solution_entered;
 }
 
 bool HyperCube::is_busy() const
@@ -434,26 +449,33 @@ void HyperCube::retreat()
 			all_home = false;
 			continue;
 		}
-		if (retreated[i]) continue;
-		if (!Rubiks[i]->stopped)
+		if (!retreated[i])
 		{
+			if (!Rubiks[i]->stopped)
+			{
+				all_home = false;
+				continue;
+			}
+			// Per-frame step = offset / frames so the cube lands exactly on
+			// home_centers[i] when the timer expires; the prior 1/100 ratio
+			// was asymptotic and collapsed cubes into the cluster center.
+			Matrix4D transform(1.0f);
+			Vector3D dir = home_centers[i] - Rubiks[i]->get_center();
+			dir.direction /= retreat_frames;
+			transform.translate(dir.direction);
+			Rubiks[i]->to_retreat = transform;
+			Rubiks[i]->retreating = true;
+			Rubiks[i]->enable();
+			Rubiks[i]->set_timer(retreat_frames);
+			Rubiks[i]->stopped = false;
+			retreated[i] = true;
 			all_home = false;
 			continue;
 		}
-		// Per-frame step is total_offset / frames so the cube lands exactly
-		// on home_centers[i] when the timer expires; the prior 1/100 ratio
-		// was asymptotic and over-collapsed cubes into the cluster center.
-		Matrix4D transform(1.0f);
-		Vector3D dir = home_centers[i] - Rubiks[i]->get_center();
-		dir.direction /= retreat_frames;
-		transform.translate(dir.direction);
-		Rubiks[i]->to_retreat = transform;
-		Rubiks[i]->retreating = true;
-		Rubiks[i]->enable();
-		Rubiks[i]->set_timer(retreat_frames);
-		Rubiks[i]->stopped = false;
-		retreated[i] = true;
-		all_home = false;
+		// Already armed; gate the outer-solve on the retreat animation
+		// finishing. Rubik::stopped is never reset after retreat, so probe
+		// is_busy() which clears once disable() runs at timer expiry.
+		if (Rubiks[i]->is_busy()) all_home = false;
 	}
 	if (all_home)
 	{
