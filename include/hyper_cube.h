@@ -36,12 +36,16 @@ public:
 
 	Rubik** cur_cube = nullptr;
 	std::vector<Rubik*> Rubiks;
+	std::vector<Point> home_centers;
+	std::vector<bool> retreated;
 	std::vector<Rubik**> Frontal_Litter, Back_Litter, Up_Litter, Down_Litter, Left_Litter, Right_Litter;
 	std::queue<char> moves;
 	std::string to_scramble, to_solve;
 	bool f = false, fPrime = false, d = false, dPrime = false, u = false, uPrime = false, b = false, bPrime = false;
 	bool r = false, rPrime = false, l = false, lPrime = false, solving = false;
 	bool scrambling = false;
+	bool pending_inner_scramble = false;
+	bool expanding_for_solve = false;
 	char current_move = 0;
 
 private:
@@ -140,6 +144,8 @@ HyperCube::HyperCube(const Point& center, float diameter) : cur_cube(nullptr), c
 	{
 		Rubik* temp_rubik = new Rubik(centers[i], diameter - (diameter/20));
 		Rubiks.push_back(temp_rubik);
+		home_centers.push_back(temp_rubik->get_center());
+		retreated.push_back(false);
 	}
 
 	for (int i = 0; i < 9; i++)
@@ -167,8 +173,18 @@ void HyperCube::disable()
 	enable_movement = start_new_movement = false;
 	if (scrambling)
 	{
-		this->scrambled = true;
-		this->scrambling = false;
+		if (pending_inner_scramble)
+		{
+			// Keep scrambling=true; flipped to false in render() once every
+			// inner cube reports idle so the banner stays up until done.
+			pending_inner_scramble = false;
+			for (Rubik* rk : Rubiks) rk->scramble();
+		}
+		else
+		{
+			this->scrambled = true;
+			this->scrambling = false;
+		}
 	}
 	if (solution_entered)
 	{
@@ -209,6 +225,20 @@ void HyperCube::render()
 		Rubiks[i]->render();
 	}
 
+	if (scrambling && !pending_inner_scramble && moves.empty() && !enable_movement)
+	{
+		bool any_busy = false;
+		for (Rubik* rk : Rubiks)
+		{
+			if (rk->is_busy()) { any_busy = true; break; }
+		}
+		if (!any_busy)
+		{
+			scrambling = false;
+			scrambled = true;
+		}
+	}
+
 	if (!totally_scrambled)
 	{
 		bool all_scrambled = true;
@@ -239,23 +269,22 @@ void HyperCube::scramble()
 	}
 	std::cout << this->to_scramble << std::endl;
 	this->scrambling = true;
+	// Outer rotate_litter() and inner face rotations conflict if run together
+	// — sub-cubes are rigidly rotated by the outer pass while their own face
+	// pointers shift, which separates the cubies. Run inner scrambles only
+	// after the outer queue drains.
+	this->pending_inner_scramble = true;
 	this->read_moves(this->to_scramble);
 	this->set_speed(3.0f);
 	this->enable();
-
-	// Also scramble each inner Rubik so the whole cluster *and* every
-	// individual cube end up in a random state.
-	for (Rubik* r : Rubiks) r->scramble();
 }
 
 void HyperCube::solve_Rubiks()
 {
+	std::fill(retreated.begin(), retreated.end(), false);
 	this->solving = true;
-	for (int i = 0; i < Rubiks.size(); i++)
-	{
-		Rubiks[i]->solved = false;
-		Rubiks[i]->solve();
-	}
+	this->expanding_for_solve = true;
+	this->set_expanding();
 }
 
 void HyperCube::play_move(char move)
@@ -396,29 +425,37 @@ void HyperCube::reassign_pointers(const std::vector<Rubik**>& cur_litter, const 
 
 void HyperCube::retreat()
 {
-	bool all_solved = true;
+	bool all_home = true;
+	const int retreat_frames = 35;
 	for (int i = 0; i < Rubiks.size(); i++)
 	{
 		if (!Rubiks[i]->is_solved())
 		{
-			all_solved = false;
+			all_home = false;
 			continue;
 		}
-		if (Rubiks[i]->stopped)
+		if (retreated[i]) continue;
+		if (!Rubiks[i]->stopped)
 		{
-			std::cout << "Rubiks[" << i << "] started retreating" << std::endl;
-			Matrix4D transform(1.0f);
-			Vector3D dir = this->get_center() - Rubiks[i]->get_center();
-			dir.direction /= 100;
-			transform.translate(dir.direction);
-			Rubiks[i]->to_retreat = transform;
-			Rubiks[i]->retreating = true;
-			Rubiks[i]->enable();
-			Rubiks[i]->set_timer(35);
-			Rubiks[i]->stopped = false;
+			all_home = false;
+			continue;
 		}
+		// Per-frame step is total_offset / frames so the cube lands exactly
+		// on home_centers[i] when the timer expires; the prior 1/100 ratio
+		// was asymptotic and over-collapsed cubes into the cluster center.
+		Matrix4D transform(1.0f);
+		Vector3D dir = home_centers[i] - Rubiks[i]->get_center();
+		dir.direction /= retreat_frames;
+		transform.translate(dir.direction);
+		Rubiks[i]->to_retreat = transform;
+		Rubiks[i]->retreating = true;
+		Rubiks[i]->enable();
+		Rubiks[i]->set_timer(retreat_frames);
+		Rubiks[i]->stopped = false;
+		retreated[i] = true;
+		all_home = false;
 	}
-	if (all_solved)
+	if (all_home)
 	{
 		solving = false;
 		this->solve();
@@ -562,11 +599,23 @@ void HyperCube::stop_current_movement()
 	else if (expanding)
 	{
 		expanding = retreating = enable_movement = false;
-		for (int i = 0; i < Rubiks.size(); i++)
+		if (expanding_for_solve)
 		{
-			Rubiks[i]->scramble();
+			expanding_for_solve = false;
+			for (int i = 0; i < Rubiks.size(); i++)
+			{
+				Rubiks[i]->solved = false;
+				Rubiks[i]->solve();
+			}
 		}
-		totally_scrambled = false;
+		else
+		{
+			for (int i = 0; i < Rubiks.size(); i++)
+			{
+				Rubiks[i]->scramble();
+			}
+			totally_scrambled = false;
+		}
 	}
 	f = fPrime = d = dPrime = u = uPrime = b = bPrime = r = rPrime = l = lPrime = false;
 	current_move = 0;
