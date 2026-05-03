@@ -124,7 +124,7 @@ public:
     {
         glUniform4fv(glGetUniformLocation(ID, name.c_str()), 1, &value[0]);
     }
-    void setVec4Color(const std::string& name, glm::vec4& value) const
+    void setVec4Color(const std::string& name, const glm::vec4& value) const
     {
         glUniform4f(glGetUniformLocation(ID, name.c_str()), value[0], value[1], value[2], value[3]);
     }

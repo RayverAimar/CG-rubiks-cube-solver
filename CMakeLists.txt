@@ -1,120 +1,67 @@
-project( Tutorial_Rubik_glfw )
+cmake_minimum_required(VERSION 3.24)
+project(rubik LANGUAGES C CXX)
 
-message( "Configuring main application - ${PROJECT_NAME} : " )
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_C_STANDARD 11)
 
-# OpenGL
+# Place the binary in build/, with shaders alongside it.
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+
+include(FetchContent)
+
+# ── GLFW ──────────────────────────────────────────────────────────
+set(GLFW_BUILD_DOCS     OFF CACHE BOOL "" FORCE)
+set(GLFW_BUILD_TESTS    OFF CACHE BOOL "" FORCE)
+set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+set(GLFW_INSTALL        OFF CACHE BOOL "" FORCE)
+
+FetchContent_Declare(glfw
+    GIT_REPOSITORY https://github.com/glfw/glfw.git
+    GIT_TAG        3.4
+    GIT_SHALLOW    TRUE)
+FetchContent_MakeAvailable(glfw)
+
+# ── GLM (header-only) ─────────────────────────────────────────────
+FetchContent_Declare(glm
+    GIT_REPOSITORY https://github.com/g-truc/glm.git
+    GIT_TAG        1.0.1
+    GIT_SHALLOW    TRUE)
+FetchContent_MakeAvailable(glm)
+
+# ── GLAD (vendored under external/glad/) ──────────────────────────
+add_library(glad STATIC external/glad/src/glad.c)
+target_include_directories(glad PUBLIC external/glad/include)
+
+# ── OpenGL ────────────────────────────────────────────────────────
 find_package(OpenGL REQUIRED)
 
-file(GLOB SOURCES "*.cpp" ${DEPENDENCY_DIR}/include/glad/glad/glad.c )
-file(GLOB HEADERS "*.h" )
-file(GLOB SHADERS "*.vert" "*.frag" "*.vs" "*.fs" )
+# ── Sources ───────────────────────────────────────────────────────
+file(GLOB_RECURSE SOLVER_SOURCES CONFIGURE_DEPENDS "include/solver/*.cpp")
 
-include_directories( 
-${DEPENDENCY_DIR}/include/glad/ 
-${DEPENDENCY_DIR}/include/glfw/
-${DEPENDENCY_DIR}/include/freeimage/
-${DEPENDENCY_DIR}/include/glew
-${DEPENDENCY_DIR}/include/glm
-${DEPENDENCY_DIR}/include/freeglut
+add_executable(rubik
+    main.cpp
+    ${SOLVER_SOURCES})
 
-)
+target_include_directories(rubik PRIVATE
+    ${CMAKE_SOURCE_DIR}
+    ${CMAKE_SOURCE_DIR}/include)
 
-message( "\nBuild mode test is: ${CMAKE_BUILD_TYPE}" )
+target_link_libraries(rubik PRIVATE
+    glfw
+    glm::glm
+    glad
+    OpenGL::GL)
 
-if ( CMAKE_BUILD_TYPE STREQUAL "Debug")
-    message("\nOpenGL_GLUT_GLFW_Program -- Debug mode ****************")
-	link_directories(
-	${DEPENDENCY_DIR}/lib/glad/Debug/
-	${DEPENDENCY_DIR}/lib/glfw/Debug/
-	${DEPENDENCY_DIR}/lib/freeglut/Debug/
-	${DEPENDENCY_DIR}/lib/freeimage/Debug/
-	${DEPENDENCY_DIR}/lib/glew/Debug/
-	${DEPENDENCY_DIR}/lib/glm/Debug/
-	)
+# ── Warning level ─────────────────────────────────────────────────
+if(MSVC)
+    target_compile_options(rubik PRIVATE /W3)
 else()
-    message("\nOpenGL_GLUT_GLFW_Program -- Release mode ****************")
-	link_directories(
-	${DEPENDENCY_DIR}/lib/glad/Release/
-	${DEPENDENCY_DIR}/lib/glfw/Release/
-	${DEPENDENCY_DIR}/lib/freeglut/Release/
-	${DEPENDENCY_DIR}/lib/freeimage/Release/
-	${DEPENDENCY_DIR}/lib/glew/Release/
-	${DEPENDENCY_DIR}/lib/glm/Release/
-	)
-endif ()
- 
-add_executable( ${PROJECT_NAME}  ${HEADERS} ${SOURCES} ${SHADERS} )
+    target_compile_options(rubik PRIVATE -Wall -Wno-unused-variable -Wno-unused-but-set-variable)
+endif()
 
-if ( CMAKE_BUILD_TYPE STREQUAL "Debug")
-	if ( WIN32 )
-	    message("\nOpenGL_GLUT_GLFW_Program -- Debug mode Windows ****************")
-		target_link_libraries( ${PROJECT_NAME} 
-						   opengl32
-						   freeglut_staticd.lib
-						   glad.lib
-	                       glfw3.lib
-						   glew32d.lib
-						   FreeImaged.lib
-						   glm_static.lib
-						   
-						    )
-	else()
-		message("\nOpenGL_GLUT_GLFW_Program -- Debug mode Linux ****************")
-		target_link_libraries( ${PROJECT_NAME} 
-						   ${OPENGL_LIBRARY}
-							-lm
-							-lGL
-							-lGLU
-							-lX11
-							-lXi
-							-lXxf86vm 
-							-lXrandr 
-							-pthread 
-							-ldl
-							-lm
-						   libglad.a
-	                       libglfw3.a
-						   libGLEWd.a
-						   libglut.a
-						   libfreeimage.a
-						   libglm_static.a
-						    )
-
-	endif()					    	
-else()
-	if ( WIN32 )
-		message("\nOpenGL_GLUT_GLFW_Program -- Release mode Windows ****************")
-		target_link_libraries( ${PROJECT_NAME} 
-						   opengl32
-						   freeglut_static.lib
-						   glad.lib
-	                       glfw3.lib
-						   glew32.lib
-						   FreeImage.lib
-						   glm_static.lib
-						    )
-	else()
-		message("\nOpenGL_GLUT_GLFW_Program -- Release mode Linux ****************")
-		target_link_libraries( ${PROJECT_NAME} 
-						  ${OPENGL_LIBRARY}
-												    
-							-lm
-							-lGL
-							-lGLU
-							-lX11
-							-lXi
-							-lXxf86vm 
-							-lXrandr 
-							-pthread 
-							-ldl
-							-lm
-						   libglad.a
-	                       libglfw3.a
-						   libGLEW.a
-						   libglut.a
-						   libfreeimage.a
-						   libglm_static.a
-							)
-
-	endif()	
-endif ()                      
+# ── Copy shaders next to the binary so relative paths just work ───
+add_custom_command(TARGET rubik POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+            ${CMAKE_SOURCE_DIR}/shaders
+            $<TARGET_FILE_DIR:rubik>/shaders)

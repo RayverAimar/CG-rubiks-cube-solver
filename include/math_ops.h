@@ -1,5 +1,5 @@
-#ifndef __MATH_H__
-#define __MATH_H__
+#ifndef __MATH_OPS_H__
+#define __MATH_OPS_H__
 
 #include <vector>
 
@@ -8,33 +8,33 @@
 
 /* More Point Overloads */
 
-Point operator + (const Point& _point, const Vector3D& _vector)
+inline Point operator + (const Point& _point, const Vector3D& _vector)
 {
     Point to_return(_point);
     to_return += _vector.direction;
     return to_return;
 }
 
-Point operator - (const Point& _point, const Vector3D& _vector)
+inline Point operator - (const Point& _point, const Vector3D& _vector)
 {
     Point to_return(_point);
     to_return -= _vector.direction;
     return to_return;
 }
 
-Point& operator -= (Point& _point, const Vector3D& _vector)
+inline Point& operator -= (Point& _point, const Vector3D& _vector)
 {
     _point -= _vector.direction;
     return _point;
 }
 
-Point& operator += (Point& _point, const Vector3D& _vector)
+inline Point& operator += (Point& _point, const Vector3D& _vector)
 {
     _point += _vector.direction;
     return _point;
 }
 
-Point operator * (const Matrix4D& _matrix, const Point& _point)
+inline Point operator * (const Matrix4D& _matrix, const Point& _point)
 {
     std::vector<float> modified_vertex = { _point.x, _point.y, _point.z, 1.0f };
     std::vector<float> ans = { 0.0f, 0.0f, 0.0f, 0.0f };
@@ -54,7 +54,7 @@ Point operator * (const Matrix4D& _matrix, const Point& _point)
 
 }
 
-Point& operator *= (Point& _point, const Matrix4D& _matrix)
+inline Point& operator *= (Point& _point, const Matrix4D& _matrix)
 {
     std::vector<float> modified_vertex = { _point.x, _point.y, _point.z, 0.0f };
     std::vector<float> ans = { 0.0f, 0.0f, 0.0f, 0.0f };
@@ -75,4 +75,4 @@ Point& operator *= (Point& _point, const Matrix4D& _matrix)
     
 }
 
-#endif // !__MATH_H__
+#endif // !__MATH_OPS_H__

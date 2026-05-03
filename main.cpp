@@ -1,3 +1,8 @@
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <vector>
+
 #include "./include/open_gl_loader.h"
 #include "./include/menu.h"
 #include "./include/hyper_cube.h"
@@ -12,20 +17,60 @@ HyperCube* myHyperCube;
 
 int prime = 0;
 
-int main()
+// Render a warmed-up frame and dump it as a PPM image, then exit.
+// Used by `--screenshot <path>` (CI smoke test + README capture).
+static void dump_screenshot(const char* path)
+{
+	myHyperCube->enable();
+	myHyperCube->set_expanding();
+
+	// Pull the camera back so the scrambled cube fits comfortably in frame.
+	delete camera;
+	camera = new Camera(glm::vec3(0.0f, 0.0f, 6.0f));
+
+	// Long warmup so the expansion animation settles before capture.
+	const int frames_warmup = 240;
+	for (int i = 0; i < frames_warmup; i++)
+	{
+		OpenGL.clearBuffers();
+		myHyperCube->render();
+		OpenGL.update();
+	}
+
+	int w = SCR_WIDTH, h = SCR_HEIGHT;
+	std::vector<unsigned char> pixels(w * h * 3);
+	glReadPixels(0, 0, w, h, GL_RGB, GL_UNSIGNED_BYTE, pixels.data());
+
+	FILE* f = std::fopen(path, "wb");
+	if (!f) { std::fprintf(stderr, "screenshot: cannot open %s\n", path); return; }
+	std::fprintf(f, "P6\n%d %d\n255\n", w, h);
+	// Flip vertically (OpenGL origin is bottom-left, PPM is top-left)
+	for (int y = h - 1; y >= 0; y--)
+		std::fwrite(pixels.data() + y * w * 3, 1, w * 3, f);
+	std::fclose(f);
+	std::fprintf(stderr, "screenshot: wrote %s (%dx%d)\n", path, w, h);
+}
+
+int main(int argc, char** argv)
 {
 	myHyperCube = new HyperCube(center, diameter);
-	
+
+	if (argc >= 3 && std::strcmp(argv[1], "--screenshot") == 0)
+	{
+		dump_screenshot(argv[2]);
+		return 0;
+	}
+
 	menu();
-	
+
 	while (OpenGL.isOpen())
 	{
 		OpenGL.clearBuffers();
-		
+
 		float currentFrame = static_cast<float>(glfwGetTime());
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
-	
+
 		myHyperCube->render();
 
 		OpenGL.update();

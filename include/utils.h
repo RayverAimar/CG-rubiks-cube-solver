@@ -12,9 +12,9 @@
 #define PI									3.14159265359
 #define to_radians(x)						(x * (float) PI ) / 180.0f
 
-#define CUBE_FRAGMENT_SHADER_PATH			"..\\..\\..\\..\\..\\src\\Tutorial_Rubik\\shaders\\fShader.fs"
-#define FRAGMENT_SHADER_PATH				"..\\..\\..\\..\\..\\src\\Tutorial_Rubik\\shaders\\fragment_shader.fs"
-#define VERTEX_SHADER_PATH					"..\\..\\..\\..\\..\\src\\Tutorial_Rubik\\shaders\\vertex_shader.vs"
+#define CUBE_FRAGMENT_SHADER_PATH			"shaders/fShader.fs"
+#define FRAGMENT_SHADER_PATH				"shaders/fragment_shader.fs"
+#define VERTEX_SHADER_PATH					"shaders/vertex_shader.vs"
 
 
 #define F_MOVEMENT							'F'
