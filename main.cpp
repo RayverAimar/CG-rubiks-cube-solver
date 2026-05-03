@@ -103,18 +103,23 @@ static void enterMode(AppMode m)
 	else if (m == AppMode::HyperCube)
 		hyperCube = new HyperCube(center, diameter);
 
-	// Cubes render with visual center offset from the constructed origin
-	// (Rubik adds +separation per axis, HyperCube adds +3*diameter on Z).
-	// Aim the camera at that visual center so the cube sits in frame.
+	// scene_pivot is the cluster centroid; classical_movement() tilts around
+	// it so the camera can sit straight on world XY=0.
 	delete camera;
 	if (m == AppMode::HyperCube)
-		camera = new Camera(glm::vec3(0.095f, 0.095f, 5.5f));
+	{
+		scene_pivot = glm::vec3(0.0f, 0.0f, 0.395f);
+		// Extra pull-back leaves headroom for the expand-and-reassemble pass.
+		camera = new Camera(glm::vec3(0.0f, 0.0f, 3.20f));
+	}
 	else
-		camera = new Camera(glm::vec3(0.1f, 0.1f, 1.4f));
+	{
+		scene_pivot = glm::vec3(0.0f, 0.0f, 0.10f);
+		camera = new Camera(glm::vec3(0.0f, 0.0f, 1.40f));
+	}
 
 	prime = false;
 	showHelp = true;
-	helpAutoHideAt = glfwGetTime() + 5.0;
 	firstMouse = true;
 	appMode = m;
 	glfwSetInputMode(OpenGL.window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);

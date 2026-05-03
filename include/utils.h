@@ -58,6 +58,10 @@ static float lastFrame = 0.0f;
 // Enable Camera
 static bool process_Camera = true;
 
+// Pivot for the model tilt in classical_movement(); set per mode so the tilt
+// orbits the cluster instead of the world origin.
+static glm::vec3 scene_pivot = glm::vec3(0.0f, 0.0f, 0.0f);
+
 const char valid_moves[] = { F_MOVEMENT, D_MOVEMENT, U_MOVEMENT, B_MOVEMENT, R_MOVEMENT, L_MOVEMENT,
 							 F_PRIME_MOVEMENT, D_PRIME_MOVEMENT, U_PRIME_MOVEMENT, B_PRIME_MOVEMENT, R_PRIME_MOVEMENT, L_PRIME_MOVEMENT };
 
