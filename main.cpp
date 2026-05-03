@@ -27,6 +27,13 @@ static bool prime = false;       // shift modifier latched per-press
 static bool showHelp = true;     // help overlay visibility
 static double helpAutoHideAt = 0.0;
 
+// Post-solve celebration. Fires on the busy→idle transition once a solve
+// pass finishes; drives both the scale pulse and the "Solved!" banner.
+static double solvedAt = -1.0;
+static bool wasSolving = false;
+static const double SOLVED_BANNER_SECONDS = 2.0;
+static const double SOLVED_PULSE_SECONDS = 0.7;
+
 void key_callback(GLFWwindow*, int, int, int, int);
 void mouse_callback(GLFWwindow*, double, double);
 void scroll_callback(GLFWwindow*, double, double);
@@ -36,6 +43,35 @@ static void drawHelpOverlay();
 static void drawSolvingBanner();
 
 // ── Helpers ──────────────────────────────────────────────────────────
+// Distinguishes solve animations from plain face turns / scrambles so the
+// celebration only fires after Space (or auto-solve), not after every move.
+static bool worldSolving()
+{
+	if (appMode == AppMode::Rubik && singleCube)
+		return singleCube->solution_entered;
+	if (appMode == AppMode::HyperCube && hyperCube)
+		return hyperCube->is_solving();
+	return false;
+}
+
+static void update_solved_pulse()
+{
+	bool nowSolving = worldSolving();
+	if (wasSolving && !nowSolving) solvedAt = glfwGetTime();
+	wasSolving = nowSolving;
+
+	scene_scale = 1.0f;
+	if (solvedAt > 0.0)
+	{
+		double elapsed = glfwGetTime() - solvedAt;
+		if (elapsed >= 0.0 && elapsed < SOLVED_PULSE_SECONDS)
+		{
+			float t = static_cast<float>(elapsed / SOLVED_PULSE_SECONDS);
+			scene_scale = 1.0f + 0.12f * std::sin(t * 3.14159265f);
+		}
+	}
+}
+
 static bool worldBusy()
 {
 	if (appMode == AppMode::Rubik    && singleCube) return singleCube->is_busy();
@@ -122,6 +158,9 @@ static void enterMode(AppMode m)
 	showHelp = true;
 	firstMouse = true;
 	appMode = m;
+	solvedAt = -1.0;
+	wasSolving = false;
+	scene_scale = 1.0f;
 	glfwSetInputMode(OpenGL.window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 }
 
@@ -130,6 +169,9 @@ static void backToMenu()
 	delete singleCube; singleCube = nullptr;
 	delete hyperCube;  hyperCube  = nullptr;
 	appMode = AppMode::Menu;
+	solvedAt = -1.0;
+	wasSolving = false;
+	scene_scale = 1.0f;
 	glfwSetInputMode(OpenGL.window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 }
 
@@ -180,6 +222,81 @@ static void initImGui()
 	ImGui::StyleColorsDark();
 	ImGui_ImplGlfw_InitForOpenGL(OpenGL.window, true);
 	ImGui_ImplOpenGL3_Init("#version 330");
+}
+
+// Render one full frame: 3D scene + ImGui overlay.
+static void render_frame(bool show_banner)
+{
+	update_solved_pulse();
+	OpenGL.clearBuffers();
+	if (appMode == AppMode::Rubik    && singleCube) singleCube->render();
+	if (appMode == AppMode::HyperCube && hyperCube)  hyperCube->render();
+
+	ImGui_ImplOpenGL3_NewFrame();
+	ImGui_ImplGlfw_NewFrame();
+	ImGui::NewFrame();
+	if (show_banner) drawSolvingBanner();
+	ImGui::Render();
+	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+	OpenGL.update();
+}
+
+// `--record-view <rubik|hyper> <out_dir>` drives a full scramble → solve
+// cycle and writes every other frame as a PPM into out_dir. Pair with
+// scripts/record_gifs.sh to assemble GIFs via ffmpeg.
+static void record_view(const char* view, const char* out_dir)
+{
+	initImGui();
+	showHelp = false;
+
+	if (std::strcmp(view, "rubik") == 0) enterMode(AppMode::Rubik);
+	else                                  enterMode(AppMode::HyperCube);
+
+	for (int i = 0; i < 30; i++) render_frame(false);
+
+	scrambleCurrent();
+
+	const int frame_skip = 2;
+	const int max_frames = 4000;
+	const int idle_threshold = 18;
+	bool solve_triggered = false;
+	int idle = 0;
+	int saved = 0;
+	char path[512];
+
+	for (int f = 0; f < max_frames; f++)
+	{
+		render_frame(true);
+
+		if (f % frame_skip == 0)
+		{
+			std::snprintf(path, sizeof(path), "%s/frame_%05d.ppm", out_dir, saved++);
+			write_ppm(path);
+		}
+
+		if (worldBusy()) idle = 0;
+		else            idle++;
+
+		if (idle >= idle_threshold)
+		{
+			if (!solve_triggered)
+			{
+				solveCurrent();
+				solve_triggered = true;
+				idle = 0;
+			}
+			else
+			{
+				break;
+			}
+		}
+	}
+
+	std::fprintf(stderr, "record: wrote %d frames to %s\n", saved, out_dir);
+
+	ImGui_ImplOpenGL3_Shutdown();
+	ImGui_ImplGlfw_Shutdown();
+	ImGui::DestroyContext();
 }
 
 static void dump_screenshot(const char* view, const char* path)
@@ -304,13 +421,15 @@ static void drawHelpOverlay()
 
 static void drawSolvingBanner()
 {
+	bool celebrating = solvedAt > 0.0
+		&& (glfwGetTime() - solvedAt) < SOLVED_BANNER_SECONDS;
 	const char* status = worldStatus();
-	if (!status) return;
+	if (!status && !celebrating) return;
 
 	const ImGuiViewport* vp = ImGui::GetMainViewport();
 	ImVec2 pos(vp->GetCenter().x, vp->WorkPos.y + 40);
 	ImGui::SetNextWindowPos(pos, ImGuiCond_Always, ImVec2(0.5f, 0.0f));
-	ImGui::SetNextWindowBgAlpha(0.6f);
+	ImGui::SetNextWindowBgAlpha(celebrating ? 0.85f : 0.6f);
 
 	ImGuiWindowFlags flags = ImGuiWindowFlags_NoDecoration
 	                       | ImGuiWindowFlags_AlwaysAutoResize
@@ -320,7 +439,14 @@ static void drawSolvingBanner()
 	                       | ImGuiWindowFlags_NoInputs;
 
 	ImGui::Begin("Working", nullptr, flags);
-	ImGui::Text("%s", status);
+	if (celebrating)
+	{
+		ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.45f, 0.95f, 0.45f, 1.0f));
+		ImGui::Text("Solved!");
+		ImGui::PopStyleColor();
+	}
+	else
+		ImGui::Text("%s", status);
 	ImGui::End();
 }
 
@@ -339,6 +465,11 @@ int main(int argc, char** argv)
 		dump_screenshot(argv[2], argv[3]);
 		return 0;
 	}
+	if (argc >= 4 && std::strcmp(argv[1], "--record-view") == 0)
+	{
+		record_view(argv[2], argv[3]);
+		return 0;
+	}
 
 	initImGui();
 
@@ -348,6 +479,7 @@ int main(int argc, char** argv)
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
 
+		update_solved_pulse();
 		OpenGL.clearBuffers();
 
 		if (appMode == AppMode::Rubik    && singleCube) singleCube->render();

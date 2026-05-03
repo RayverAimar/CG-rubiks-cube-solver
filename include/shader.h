@@ -152,9 +152,10 @@ public:
         glm::mat4 model = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
         glm::mat4 view = glm::mat4(1.0f);
         glm::mat4 projection = glm::mat4(1.0f);
-        // Tilt around scene_pivot so the cluster stays on the camera axis.
+        // Tilt + post-solve pulse around scene_pivot.
         model = glm::translate(model, scene_pivot);
         model = glm::rotate(model, glm::radians(60.0f), glm::vec3(0.5f, 1.0f, 0.0f));
+        model = glm::scale(model, glm::vec3(scene_scale));
         model = glm::translate(model, -scene_pivot);
         view = camera->GetViewMatrix();
         projection = glm::perspective(glm::radians(camera->Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);

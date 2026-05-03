@@ -62,6 +62,10 @@ static bool process_Camera = true;
 // orbits the cluster instead of the world origin.
 static glm::vec3 scene_pivot = glm::vec3(0.0f, 0.0f, 0.0f);
 
+// Uniform scale applied around scene_pivot. Driven by the post-solve pulse
+// in main.cpp; sits at 1.0 the rest of the time.
+static float scene_scale = 1.0f;
+
 const char valid_moves[] = { F_MOVEMENT, D_MOVEMENT, U_MOVEMENT, B_MOVEMENT, R_MOVEMENT, L_MOVEMENT,
 							 F_PRIME_MOVEMENT, D_PRIME_MOVEMENT, U_PRIME_MOVEMENT, B_PRIME_MOVEMENT, R_PRIME_MOVEMENT, L_PRIME_MOVEMENT };
 
