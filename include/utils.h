@@ -2,8 +2,8 @@
 #define __UTILS_H__
 
 #define SCR_TITLE							"Rayver - OpenGL Project"
-#define SCR_WIDTH							800
-#define SCR_HEIGHT							600
+#define SCR_WIDTH							1280
+#define SCR_HEIGHT							800
 
 #define X_AXIS								0
 #define Y_AXIS								1
@@ -12,9 +12,9 @@
 #define PI									3.14159265359
 #define to_radians(x)						(x * (float) PI ) / 180.0f
 
-#define CUBE_FRAGMENT_SHADER_PATH			"..\\..\\..\\..\\..\\src\\Tutorial_Rubik\\shaders\\fShader.fs"
-#define FRAGMENT_SHADER_PATH				"..\\..\\..\\..\\..\\src\\Tutorial_Rubik\\shaders\\fragment_shader.fs"
-#define VERTEX_SHADER_PATH					"..\\..\\..\\..\\..\\src\\Tutorial_Rubik\\shaders\\vertex_shader.vs"
+#define CUBE_FRAGMENT_SHADER_PATH			"shaders/fShader.fs"
+#define FRAGMENT_SHADER_PATH				"shaders/fragment_shader.fs"
+#define VERTEX_SHADER_PATH					"shaders/vertex_shader.vs"
 
 
 #define F_MOVEMENT							'F'
@@ -57,6 +57,14 @@ static float lastFrame = 0.0f;
 
 // Enable Camera
 static bool process_Camera = true;
+
+// Pivot for the model tilt in classical_movement(); set per mode so the tilt
+// orbits the cluster instead of the world origin.
+static glm::vec3 scene_pivot = glm::vec3(0.0f, 0.0f, 0.0f);
+
+// Uniform scale applied around scene_pivot. Driven by the post-solve pulse
+// in main.cpp; sits at 1.0 the rest of the time.
+static float scene_scale = 1.0f;
 
 const char valid_moves[] = { F_MOVEMENT, D_MOVEMENT, U_MOVEMENT, B_MOVEMENT, R_MOVEMENT, L_MOVEMENT,
 							 F_PRIME_MOVEMENT, D_PRIME_MOVEMENT, U_PRIME_MOVEMENT, B_PRIME_MOVEMENT, R_PRIME_MOVEMENT, L_PRIME_MOVEMENT };

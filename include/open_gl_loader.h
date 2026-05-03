@@ -76,7 +76,9 @@ void OpenGlLoader::glfwCallbacksSetter()
 	glfwSetCursorPosCallback(this->window, mouse_callback);
 	glfwSetScrollCallback(this->window, scroll_callback);
 
-	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	// Start with the cursor visible — main.cpp will lock it for FPS camera
+	// when entering a play mode, and re-enable it when returning to the menu.
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 }
 
 void OpenGlLoader::glfwContextInit()
@@ -93,6 +95,7 @@ void OpenGlLoader::glfwGladLoader()
 		std::cout << "Failed to initialize GLAD" << std::endl;
 		exit(-1);
 	}
+
 }
 
 void OpenGlLoader::glfwWindowInit()
@@ -116,6 +119,11 @@ bool OpenGlLoader::isOpen()
 
 void OpenGlLoader::clearBuffers()
 {
+	// Re-asserted every frame: ImGui changes glViewport during its draw, and
+	// on macOS Retina the framebuffer can resize after our init pass.
+	int fbW, fbH;
+	glfwGetFramebufferSize(this->window, &fbW, &fbH);
+	glViewport(0, 0, fbW, fbH);
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }

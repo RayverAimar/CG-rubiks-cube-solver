@@ -124,7 +124,7 @@ public:
     {
         glUniform4fv(glGetUniformLocation(ID, name.c_str()), 1, &value[0]);
     }
-    void setVec4Color(const std::string& name, glm::vec4& value) const
+    void setVec4Color(const std::string& name, const glm::vec4& value) const
     {
         glUniform4f(glGetUniformLocation(ID, name.c_str()), value[0], value[1], value[2], value[3]);
     }
@@ -152,7 +152,11 @@ public:
         glm::mat4 model = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
         glm::mat4 view = glm::mat4(1.0f);
         glm::mat4 projection = glm::mat4(1.0f);
+        // Tilt + post-solve pulse around scene_pivot.
+        model = glm::translate(model, scene_pivot);
         model = glm::rotate(model, glm::radians(60.0f), glm::vec3(0.5f, 1.0f, 0.0f));
+        model = glm::scale(model, glm::vec3(scene_scale));
+        model = glm::translate(model, -scene_pivot);
         view = camera->GetViewMatrix();
         projection = glm::perspective(glm::radians(camera->Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
         // retrieve the matrix uniform locations
